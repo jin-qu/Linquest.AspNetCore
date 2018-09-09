@@ -5,6 +5,8 @@ using System.Linq.Dynamic;
 using System.Reflection;
 using Linquest.AspNetCore;
 
+// todo: Other type and custom handlings (ie EF uses lambda Skip and Take)
+
 namespace Linquest.AspNetCore {
 
     public class QueryableHandler {
