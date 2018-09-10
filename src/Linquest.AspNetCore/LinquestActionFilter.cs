@@ -21,10 +21,10 @@ namespace Linquest.AspNetCore {
         public override void OnResultExecuting(ResultExecutingContext context) {
             base.OnResultExecuting(context);
 
-            if (!(context.Result is ObjectResult objectResult))return;
+            if (!(context.Result is ObjectResult objectResult)) return;
 
             if (context.ActionDescriptor is ControllerActionDescriptor cad &&
-                cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonLinquestActionAttribute)))return;
+                cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonLinquestActionAttribute))) return;
 
             var value = objectResult.Value;
             var service = context.Controller as ILinquestService;
@@ -40,7 +40,7 @@ namespace Linquest.AspNetCore {
             context.Result = HandleResponse(processResult, response);
         }
 
-        public virtual IList < (string, string) > GetParameters(HttpRequest request) {
+        public virtual IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) {
             return Helper.GetParameters(request);
         }
 

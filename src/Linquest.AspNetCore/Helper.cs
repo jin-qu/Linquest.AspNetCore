@@ -8,11 +8,12 @@ namespace Linquest.AspNetCore {
 
     public static class Helper {
 
-        public static IList < (string, string) > GetParameters(HttpRequest request) {
+        public static IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) {
             return request.Query
                 .Where(q => q.Key.StartsWith("$"))
-                .Select(q =>(q.Key, q.Value.ToString()))
-                .ToList();
+                .Select(q => new LinquestParameter(q.Key, q.Value.ToString()))
+                .ToList()
+                .AsReadOnly();
         }
 
         public static ProcessResult DefaultRequestProcessor(ActionContext context) {
@@ -31,7 +32,7 @@ namespace Linquest.AspNetCore {
         public static ActionResult HandleResponse(ProcessResult result, HttpResponse response) {
             var inlineCount = result.InlineCount;
             if (inlineCount != null && !response.Headers.ContainsKey("X-InlineCount")) {
-            response.Headers.Add("X-InlineCount", inlineCount.ToString());
+                response.Headers.Add("X-InlineCount", inlineCount.ToString());
             }
 
             return new ObjectResult(result.Result);

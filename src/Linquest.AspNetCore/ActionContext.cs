@@ -5,7 +5,7 @@ namespace Linquest.AspNetCore {
 
     public class ActionContext {
 
-        public ActionContext(ActionDescriptor descriptor, object value, IEnumerable < (string, string) > parameters) {
+        public ActionContext(ActionDescriptor descriptor, object value, IEnumerable<LinquestParameter> parameters) {
             Descriptor = descriptor;
             Value = value;
             Parameters = parameters;
@@ -13,6 +13,6 @@ namespace Linquest.AspNetCore {
 
         public ActionDescriptor Descriptor { get; }
         public object Value { get; }
-        public IEnumerable < (string, string) > Parameters  { get; }
+        public IEnumerable<LinquestParameter> Parameters  { get; }
     }
 }
