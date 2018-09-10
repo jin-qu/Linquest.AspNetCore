@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C932B221-238
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linquest.AspNetCore", "src\Linquest.AspNetCore\Linquest.AspNetCore.csproj", "{0E4D5A99-B5A7-41D4-90AD-E9ECDB79C3CC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{95993512-6B1F-417D-9F94-8A12379DD58F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linquest.AspNetCore.Tests", "tests\Linquest.AspNetCore.Tests\Linquest.AspNetCore.Tests.csproj", "{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,8 +36,21 @@ Global
 		{0E4D5A99-B5A7-41D4-90AD-E9ECDB79C3CC}.Release|x64.Build.0 = Release|Any CPU
 		{0E4D5A99-B5A7-41D4-90AD-E9ECDB79C3CC}.Release|x86.ActiveCfg = Release|Any CPU
 		{0E4D5A99-B5A7-41D4-90AD-E9ECDB79C3CC}.Release|x86.Build.0 = Release|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Debug|x64.Build.0 = Debug|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Debug|x86.Build.0 = Debug|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Release|x64.ActiveCfg = Release|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Release|x64.Build.0 = Release|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Release|x86.ActiveCfg = Release|Any CPU
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0E4D5A99-B5A7-41D4-90AD-E9ECDB79C3CC} = {C932B221-2389-4BE1-9898-03CDE5F9DE3A}
+		{FF02A2B2-3A3B-4ED4-BC8C-391986E7C28F} = {95993512-6B1F-417D-9F94-8A12379DD58F}
 	EndGlobalSection
 EndGlobal
