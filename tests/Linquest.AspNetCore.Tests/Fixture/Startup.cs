@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Linquest.AspNetCore.Tests.Fixture {
 
-    public class Startup: StartupBase {
+    public class Startup : StartupBase {
 
         public IConfiguration Configuration { get; }
 
@@ -14,7 +14,10 @@ namespace Linquest.AspNetCore.Tests.Fixture {
             Configuration = configuration;
         }
 
-        public override void ConfigureServices(IServiceCollection services) => services.AddMvc();
+        public override void ConfigureServices(IServiceCollection services) {
+            services.AddMvc();
+            services.AddMvc().AddApplicationPart(typeof(Startup).Assembly);
+        }
 
         public override void Configure(IApplicationBuilder app) => app.UseMvc();
     }

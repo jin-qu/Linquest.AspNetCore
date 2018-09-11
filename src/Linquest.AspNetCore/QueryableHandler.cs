@@ -35,40 +35,40 @@ namespace Linquest.AspNetCore {
             IQueryable inlineCountQuery = null;
             foreach (var prm in parameters) {
                 switch (prm.Name.ToLowerInvariant()) {
-                    case "inlinecount":
+                    case "$inlinecount":
                         inlineCount = prm.Value == "allpages";
                         break;
-                    case "oftype":
+                    case "$oftype":
                         inlineCountQuery = null;
                         query = OfType(query, prm.Value);
                         break;
-                    case "filter":
-                    case "where":
+                    case "$filter":
+                    case "$where":
                         inlineCountQuery = null;
                         query = Where(query, prm.Value);
                         break;
-                    case "orderby":
-                    case "thenby":
+                    case "$orderby":
+                    case "$thenby":
                         query = OrderBy(query, prm.Value);
                         break;
-                    case "expand":
-                    case "include":
+                    case "$expand":
+                    case "$include":
                         query = Include(query, prm.Value);
                         break;
-                    case "select":
+                    case "$select":
                         query = Select(query, prm.Value);
                         break;
-                    case "skip":
+                    case "$skip":
                         query = Skip(query, Convert.ToInt32(prm.Value));
                         break;
-                    case "top":
-                    case "take":
+                    case "$top":
+                    case "$take":
                         inlineCountQuery = query;
                         var take = Convert.ToInt32(prm.Value);
                         query = Take(query, take);
                         takeCount = take;
                         break;
-                    case "groupby":
+                    case "$groupby":
                         inlineCountQuery = null;
                         var prms = prm.Value.Split(';');
                         if (prms.Length > 2) throw new Exception("Invalid groupBy expression");
@@ -77,50 +77,50 @@ namespace Linquest.AspNetCore {
                         var valueSelector = prms.Length == 2 ? prms[1] : null;
                         query = GroupBy(query, keySelector, valueSelector);
                         break;
-                    case "distinct":
+                    case "$distinct":
                         inlineCountQuery = null;
                         query = Distinct(query, prm.Value);
                         break;
-                    case "reverse":
+                    case "$reverse":
                         query = Reverse(query);
                         break;
-                    case "selectmany":
+                    case "$selectmany":
                         inlineCountQuery = null;
                         takeCount = null;
                         query = SelectMany(query, prm.Value);
                         break;
-                    case "skipwhile":
+                    case "$skipwhile":
                         query = SkipWhile(query, prm.Value);
                         break;
-                    case "takewhile":
+                    case "$takewhile":
                         inlineCountQuery = query;
                         query = TakeWhile(query, prm.Value);
                         break;
-                    case "all":
+                    case "$all":
                         return CreateResult(All(query, prm.Value), inlineCountQuery);
-                    case "any":
+                    case "$any":
                         return CreateResult(Any(query, prm.Value), inlineCountQuery);
-                    case "avg":
+                    case "$avg":
                         return CreateResult(Avg(query, prm.Value), inlineCountQuery);
-                    case "max":
+                    case "$max":
                         return CreateResult(Max(query, prm.Value), inlineCountQuery);
-                    case "min":
+                    case "$min":
                         return CreateResult(Min(query, prm.Value), inlineCountQuery);
-                    case "sum":
+                    case "$sum":
                         return CreateResult(Sum(query, prm.Value), inlineCountQuery);
-                    case "count":
+                    case "$count":
                         return CreateResult(Count(query, prm.Value), inlineCountQuery);
-                    case "first":
+                    case "$first":
                         return CreateResult(First(query, prm.Value), inlineCountQuery);
-                    case "firstordefault":
+                    case "$firstordefault":
                         return CreateResult(FirstOrDefault(query, prm.Value), inlineCountQuery);
-                    case "single":
+                    case "$single":
                         return CreateResult(Single(query, prm.Value), inlineCountQuery);
-                    case "singleordefault":
+                    case "$singleordefault":
                         return CreateResult(SingleOrDefault(query, prm.Value), inlineCountQuery);
-                    case "last":
+                    case "$last":
                         return CreateResult(Last(query, prm.Value), inlineCountQuery);
-                    case "lastordefault":
+                    case "$lastordefault":
                         return CreateResult(LastOrDefault(query, prm.Value), inlineCountQuery);
                     default:
                         throw new Exception($"Unknown query parameter {prm.Value}");
