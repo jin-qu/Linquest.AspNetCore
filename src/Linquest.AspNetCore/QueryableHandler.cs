@@ -10,7 +10,7 @@ using Linquest.AspNetCore;
 namespace Linquest.AspNetCore {
 
     public class QueryableHandler {
-        private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>(() => new QueryableHandler());
+        private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>();
 
         public virtual ProcessResult HandleContent(IQueryable query, ActionContext actionContext) {
             if (query == null) throw new ArgumentNullException(nameof(query));
