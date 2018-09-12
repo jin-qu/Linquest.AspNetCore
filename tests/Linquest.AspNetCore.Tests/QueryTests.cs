@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.TestHost;
 using Xunit;
 
 namespace Linquest.AspNetCore.Tests {
+    using System.Collections.Generic;
     using System.Net;
     using Fixture;
+    using Linquest.AspNetCore.Tests.Fixture.Model;
+    using Newtonsoft.Json;
 
     public class QueryTests {
 
@@ -22,8 +25,13 @@ namespace Linquest.AspNetCore.Tests {
         public async Task ShouldGetFilteredOrders() {
             using(var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
-                var where = WebUtility.UrlEncode("it.Id > 3");
-                var value = await client.GetStringAsync("api/Test/Orders?$where=" + where);
+                var url = $"api/Test/Orders?$where={WebUtility.UrlEncode("it.Id > 3")}";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+
+                Assert.Equal(2, orders.Count);
+                Assert.Equal(4, orders[0].Id);
+                Assert.Equal("Ord5", orders[1].No);
             }
         }
 
