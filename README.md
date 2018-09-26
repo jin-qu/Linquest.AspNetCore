@@ -1,7 +1,7 @@
 # Linquest.AspNetCore
 Linquest Asp.Net Core backend.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/ytmg0iw1qmynl3fd?svg=true)](https://ci.appveyor.com/project/jin-qu/jokenizer-net)
+[![Build status](https://ci.appveyor.com/api/projects/status/dmtv1h7yfqip7ynd?svg=true)](https://ci.appveyor.com/project/umutozel/linquest-aspnetcore)
 [![Coverage Status](https://coveralls.io/repos/github/jin-qu/Linquest.AspNetCore/badge.svg?branch=master)](https://coveralls.io/github/jin-qu/Linquest.AspNetCore?branch=master)
 [![NuGet Badge](https://buildstats.info/nuget/Linquest.AspNetCore)](https://www.nuget.org/packages/Linquest.AspNetCore/)
 [![GitHub issues](https://img.shields.io/github/issues/jin-qu/Linquest.AspNetCore.svg)](https://github.com/jin-qu/Linquest.AspNetCore/issues)
