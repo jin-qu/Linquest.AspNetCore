@@ -96,6 +96,7 @@ namespace Linquest.AspNetCore {
                     case "$any":
                         return CreateResult(context, Any(query, prm.Value), inlineCountQuery);
                     case "$average":
+                    case "$avg":
                         return CreateResult(context, Avg(query, prm.Value), inlineCountQuery);
                     case "$max":
                         return CreateResult(context, Max(query, prm.Value), inlineCountQuery);

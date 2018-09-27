@@ -49,7 +49,9 @@ namespace Linquest.AspNetCore {
             => Helper.GetParameters(request);
 
         protected virtual ProcessResult ProcessRequest(ActionContext context, IServiceProvider serviceProvider)
-            => Helper.DefaultRequestProcessor(context, serviceProvider);
+            => context.Service != null
+                ? context.Service.ProcessRequest(context)
+                : Helper.DefaultRequestProcessor(context, serviceProvider);
 
         protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response)
             => Helper.HandleResponse(result, response);

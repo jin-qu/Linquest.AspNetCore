@@ -65,6 +65,50 @@ namespace Linquest.AspNetCore.Tests {
         }
 
         [Fact]
+        public async Task ShouldExecuteAll() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$all={WebUtility.UrlEncode("o => o.Id > 3")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal("false", response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldExecuteAny() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$any={WebUtility.UrlEncode("o => o.Id < 3")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal("true", response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldExecuteAvg() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$avg={WebUtility.UrlEncode("o => o.Id")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal(3, float.Parse(response));
+            }
+        }
+
+        [Fact]
+        public async Task ShouldExecuteCount() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$count={WebUtility.UrlEncode("o => o.Id > 3")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal("2", response);
+            }
+        }
+
+        [Fact]
         public async Task ShouldThrowWhenMaxCountExceeded() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
