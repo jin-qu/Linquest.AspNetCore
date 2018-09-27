@@ -135,6 +135,28 @@ namespace Linquest.AspNetCore.Tests {
         }
 
         [Fact]
+        public async Task ShouldExecuteMax() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$max={WebUtility.UrlEncode("o => o.Price")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal(1125f, float.Parse(response));
+            }
+        }
+
+        [Fact]
+        public async Task ShouldExecuteMin() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$min={WebUtility.UrlEncode("o => o.Price")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal(231.58f, float.Parse(response));
+            }
+        }
+
+        [Fact]
         public async Task ShouldExecuteCount() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
