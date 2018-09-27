@@ -1,20 +1,20 @@
+using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Linquest.AspNetCore.Tests {
-    using System.Collections.Generic;
-    using System.Net;
     using Fixture;
-    using Linquest.AspNetCore.Tests.Fixture.Model;
-    using Newtonsoft.Json;
+    using Fixture.Model;
 
     public class QueryTests {
 
         [Fact]
         public async Task ShouldAccessController() {
-            using(var testServer = CreateTestServer()) {
+            using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var value = await client.GetStringAsync("api/Test");
                 Assert.Equal("Hello World!", value);
@@ -23,9 +23,9 @@ namespace Linquest.AspNetCore.Tests {
 
         [Fact]
         public async Task ShouldGetFilteredOrders() {
-            using(var testServer = CreateTestServer()) {
+            using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
-                var url = $"api/Test/Orders?$where={WebUtility.UrlEncode("it.Id > 3")}";
+                var url = $"api/Test/Orders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
                 var response = await client.GetStringAsync(url);
                 var orders = JsonConvert.DeserializeObject<List<Order>>(response);
 

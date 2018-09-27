@@ -7,16 +7,24 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-// todo: MaxResult
+// todo: IAsyncResultFilter?
 
 namespace Linquest.AspNetCore {
+    using Interface;
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class LinquestActionFilterAttribute : ActionFilterAttribute {
 
-        public LinquestActionFilterAttribute() : base() {
+        public LinquestActionFilterAttribute() {
             Order = 0;
         }
+
+        public LinquestActionFilterAttribute(int maxResultCount) {
+            Order = 0;
+            MaxResultCount = maxResultCount;
+        }
+
+        public int? MaxResultCount { get; }
 
         public override void OnResultExecuting(ResultExecutingContext context) {
             base.OnResultExecuting(context);
@@ -32,22 +40,20 @@ namespace Linquest.AspNetCore {
             var response = context.HttpContext.Response;
 
             // translate the request query
-            var actionContext = new ActionContext(
-                context.ActionDescriptor, value, GetParameters(request)
-            );
-
-            var processResult = ProcessRequest(actionContext);
+            var actionContext = new ActionContext(context.ActionDescriptor, value, GetParameters(request), service) {
+                MaxResultCount = MaxResultCount
+            };
+            var processResult = ProcessRequest(actionContext, context.HttpContext.RequestServices);
             context.Result = HandleResponse(processResult, response);
         }
 
-        public virtual IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) {
-            return Helper.GetParameters(request);
-        }
+        protected virtual IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) 
+            => Helper.GetParameters(request);
 
-        public virtual ProcessResult ProcessRequest(ActionContext actionContext) {
-            return Helper.DefaultRequestProcessor(actionContext);
-        }
+        protected virtual ProcessResult ProcessRequest(ActionContext actionContext, IServiceProvider serviceProvider) 
+            => Helper.DefaultRequestProcessor(actionContext, serviceProvider);
 
-        protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response) => Helper.HandleResponse(result, response);
+        protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response) 
+            => Helper.HandleResponse(result, response);
     }
 }

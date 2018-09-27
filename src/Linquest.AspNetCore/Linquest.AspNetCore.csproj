@@ -2,17 +2,26 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Description>Create client queryable API endpoints.</Description>
+    <Authors>Umut Özel</Authors>
+    <Copyright>Copyright (c) 2018</Copyright>
+    <PackageLicenseUrl>https://github.com/jin-qu/Linquest.AspNetCore/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/jin-qu/Linquest.AspNetCore</PackageProjectUrl>
+    <PackageIconUrl>https://image.ibb.co/kYhmu9/api.png</PackageIconUrl>
+    <PackageTags>csharp controller action api webapi iqueryable linq</PackageTags>
+    <RepositoryUrl>https://github.com/jin-qu/Linquest.AspNetCore</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
-  </ItemGroup>
-
-  <ItemGroup>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="DynamicQueryable" Version="1.0.17" />
+    <PackageReference Include="DynamicQueryable" Version="2.0.25" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <DebugType>full</DebugType>
+    <DebugSymbols>True</DebugSymbols>
+  </PropertyGroup>
+  
 </Project>

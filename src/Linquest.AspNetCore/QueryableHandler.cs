@@ -5,38 +5,33 @@ using System.Linq.Dynamic;
 using System.Reflection;
 using Linquest.AspNetCore;
 
-// todo: Other type and custom handlings (ie EF uses lambda Skip and Take)
-
 namespace Linquest.AspNetCore {
+    using Interface;
 
-    public class QueryableHandler {
+    public class QueryableHandler : IContentHandler<IQueryable> {
         private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>();
 
         public virtual ProcessResult HandleContent(IQueryable query, ActionContext actionContext) {
             if (query == null) throw new ArgumentNullException(nameof(query));
 
-            object result;
-            int? inlineCount = null;
-
-            var parameters = actionContext.Parameters;
-            if (parameters != null) {
-                var parameterList = parameters.ToList();
-                (result, inlineCount) = HandleQuery(query, parameterList);
-            } else {
-                result = Enumerable.ToList((dynamic) query);
+            var service = actionContext.Service;
+            if (service != null) {
+                var args = new BeforeQueryEventArgs(actionContext, query);
+                service.OnBeforeHandleQuery(args);
+                query = args.Query;
             }
 
-            return new ProcessResult(actionContext) { Result = result, InlineCount = inlineCount };
-        }
+            var parameters = actionContext.Parameters;
+            if (parameters == null || !parameters.Any())
+                return CreateResult(actionContext, Enumerable.ToList((dynamic)query));
 
-        public virtual(object, int?) HandleQuery(IQueryable query, IEnumerable<LinquestParameter> parameters) {
             var inlineCount = false;
             int? takeCount = null;
             IQueryable inlineCountQuery = null;
             foreach (var prm in parameters) {
                 switch (prm.Name.ToLowerInvariant()) {
                     case "$inlinecount":
-                        inlineCount = prm.Value == "allpages";
+                        inlineCount = prm.Value != "false" || prm.Value == "allpages";
                         break;
                     case "$oftype":
                         inlineCountQuery = null;
@@ -97,44 +92,37 @@ namespace Linquest.AspNetCore {
                         query = TakeWhile(query, prm.Value);
                         break;
                     case "$all":
-                        return CreateResult(All(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, All(query, prm.Value), inlineCountQuery);
                     case "$any":
-                        return CreateResult(Any(query, prm.Value), inlineCountQuery);
-                    case "$avg":
-                        return CreateResult(Avg(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, Any(query, prm.Value), inlineCountQuery);
+                    case "$average":
+                        return CreateResult(actionContext, Avg(query, prm.Value), inlineCountQuery);
                     case "$max":
-                        return CreateResult(Max(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, Max(query, prm.Value), inlineCountQuery);
                     case "$min":
-                        return CreateResult(Min(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, Min(query, prm.Value), inlineCountQuery);
                     case "$sum":
-                        return CreateResult(Sum(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, Sum(query, prm.Value), inlineCountQuery);
                     case "$count":
-                        return CreateResult(Count(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, Count(query, prm.Value), inlineCountQuery);
                     case "$first":
-                        return CreateResult(First(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, First(query, prm.Value), inlineCountQuery);
                     case "$firstordefault":
-                        return CreateResult(FirstOrDefault(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, FirstOrDefault(query, prm.Value), inlineCountQuery);
                     case "$single":
-                        return CreateResult(Single(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, Single(query, prm.Value), inlineCountQuery);
                     case "$singleordefault":
-                        return CreateResult(SingleOrDefault(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, SingleOrDefault(query, prm.Value), inlineCountQuery);
                     case "$last":
-                        return CreateResult(Last(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, Last(query, prm.Value), inlineCountQuery);
                     case "$lastordefault":
-                        return CreateResult(LastOrDefault(query, prm.Value), inlineCountQuery);
+                        return CreateResult(actionContext, LastOrDefault(query, prm.Value), inlineCountQuery);
                     default:
                         throw new Exception($"Unknown query parameter {prm.Value}");
                 }
             }
 
-            return CreateResult(query, inlineCountQuery);
-        }
-
-        private static(object, int?) CreateResult(object result, IQueryable inlineCountQuery) {
-            return (
-                result is IQueryable ? Enumerable.ToList((dynamic) result) : result,
-                inlineCountQuery != null ? Queryable.Count((dynamic) inlineCountQuery) : null
-            );
+            return CreateResult(actionContext, query, inlineCountQuery);
         }
 
         public virtual IQueryable OfType(IQueryable query, string ofType) {
@@ -151,7 +139,7 @@ namespace Linquest.AspNetCore {
             // call Queryable's OfType method
             var mi = typeof(Queryable).GetMethod("OfType");
             var gmi = mi.MakeGenericMethod(ofTypeType);
-            query = (IQueryable) gmi.Invoke(null, new object[] { query });
+            query = (IQueryable)gmi.Invoke(null, new object[] { query });
             return query;
         }
 
@@ -166,7 +154,7 @@ namespace Linquest.AspNetCore {
         public virtual IQueryable Include(IQueryable query, string expand) {
             if (string.IsNullOrWhiteSpace(expand)) return query;
 
-            var dynQuery = (dynamic) query;
+            var dynQuery = (dynamic)query;
             expand.Split(',').ToList()
                 .ForEach(e => { dynQuery = dynQuery.Include(e.Trim()); });
             return dynQuery;
@@ -197,11 +185,11 @@ namespace Linquest.AspNetCore {
                 query = Select(query, elementSelector);
             }
 
-            return Queryable.Distinct((dynamic) query);
+            return Queryable.Distinct((dynamic)query);
         }
 
         public virtual IQueryable Reverse(IQueryable query) {
-            return Queryable.Reverse((dynamic) query);
+            return Queryable.Reverse((dynamic)query);
         }
 
         public virtual IQueryable SelectMany(IQueryable query, string projection) {
@@ -233,7 +221,7 @@ namespace Linquest.AspNetCore {
                 query = query.Select(elementSelector);
             }
 
-            return Queryable.Average((dynamic) query);
+            return Queryable.Average((dynamic)query);
         }
 
         public virtual object Max(IQueryable query, string elementSelector) {
@@ -241,7 +229,7 @@ namespace Linquest.AspNetCore {
                 query = query.Select(elementSelector);
             }
 
-            return Queryable.Max((dynamic) query);
+            return Queryable.Max((dynamic)query);
         }
 
         public virtual object Min(IQueryable query, string elementSelector) {
@@ -249,7 +237,7 @@ namespace Linquest.AspNetCore {
                 query = query.Select(elementSelector);
             }
 
-            return Queryable.Min((dynamic) query);
+            return Queryable.Min((dynamic)query);
         }
 
         public virtual object Sum(IQueryable query, string elementSelector) {
@@ -257,7 +245,7 @@ namespace Linquest.AspNetCore {
                 query = query.Select(elementSelector);
             }
 
-            return Queryable.Sum((dynamic) query);
+            return Queryable.Sum((dynamic)query);
         }
 
         public virtual object Count(IQueryable query, string predicate) {
@@ -265,7 +253,7 @@ namespace Linquest.AspNetCore {
                 query = Where(query, predicate);
             }
 
-            return Queryable.Count((dynamic) query);
+            return Queryable.Count((dynamic)query);
         }
 
         public virtual object First(IQueryable query, string predicate) {
@@ -273,7 +261,7 @@ namespace Linquest.AspNetCore {
                 query = Where(query, predicate);
             }
 
-            return Queryable.First((dynamic) query);
+            return Queryable.First((dynamic)query);
         }
 
         public virtual object FirstOrDefault(IQueryable query, string predicate) {
@@ -281,7 +269,7 @@ namespace Linquest.AspNetCore {
                 query = Where(query, predicate);
             }
 
-            return Queryable.FirstOrDefault((dynamic) query);
+            return Queryable.FirstOrDefault((dynamic)query);
         }
 
         public virtual object Single(IQueryable query, string predicate) {
@@ -289,7 +277,7 @@ namespace Linquest.AspNetCore {
                 query = Where(query, predicate);
             }
 
-            return Queryable.Single((dynamic) query);
+            return Queryable.Single((dynamic)query);
         }
 
         public virtual object SingleOrDefault(IQueryable query, string predicate) {
@@ -297,7 +285,7 @@ namespace Linquest.AspNetCore {
                 query = Where(query, predicate);
             }
 
-            return Queryable.SingleOrDefault((dynamic) query);
+            return Queryable.SingleOrDefault((dynamic)query);
         }
 
         public virtual object Last(IQueryable query, string predicate) {
@@ -305,7 +293,7 @@ namespace Linquest.AspNetCore {
                 query = Where(query, predicate);
             }
 
-            return Queryable.Last((dynamic) query);
+            return Queryable.Last((dynamic)query);
         }
 
         public virtual object LastOrDefault(IQueryable query, string predicate) {
@@ -313,7 +301,35 @@ namespace Linquest.AspNetCore {
                 query = Where(query, predicate);
             }
 
-            return Queryable.LastOrDefault((dynamic) query);
+            return Queryable.LastOrDefault((dynamic)query);
+        }
+
+        private static ProcessResult CreateResult(ActionContext actionContext, IQueryable query, int? takeCount, IQueryable inlineCountQuery = null) {
+            int? max = actionContext.MaxResultCount ?? actionContext.Service?.MaxResultCount;
+            if (max > 0) {
+                var count = takeCount ?? Queryable.Count((dynamic)inlineCountQuery);
+                if (count > max) throw new Exception($"Maximum allowed read count exceeded");
+            }
+
+            var service = actionContext.Service;
+            if (service == null)
+                return CreateResult(actionContext, Enumerable.ToList((dynamic)query), inlineCountQuery);
+
+            var beforeArgs = new BeforeQueryEventArgs(actionContext, query);
+            service.OnBeforeQueryExecute(beforeArgs);
+            query = beforeArgs.Query;
+
+            var result = Enumerable.ToList((dynamic)query);
+            var afterArgs = new AfterQueryEventArgs(actionContext, query, result);
+            service.OnAfterQueryExecute(afterArgs);
+            result = afterArgs.Result;
+
+            return CreateResult(actionContext, result, inlineCountQuery);
+        }
+
+        private static ProcessResult CreateResult(ActionContext actionContext, object result, IQueryable inlineCountQuery = null) {
+            int? inlineCount = inlineCountQuery != null ? Queryable.Count((dynamic)inlineCountQuery) : null;
+            return new ProcessResult(actionContext) { Result = result, InlineCount = inlineCount };
         }
 
         public static QueryableHandler Instance => _instance.Value;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Linquest.AspNetCore {
+    using Interface;
 
     public static class Helper {
 
@@ -16,14 +18,19 @@ namespace Linquest.AspNetCore {
                 .AsReadOnly();
         }
 
-        public static ProcessResult DefaultRequestProcessor(ActionContext context) {
+        public static ProcessResult DefaultRequestProcessor(ActionContext context, IServiceProvider serviceProvider) {
             var value = context.Value;
-            if (context.Value is IQueryable queryable) {
-                return QueryableHandler.Instance.HandleContent(queryable, context);
-            }
+            if (value == null)
+                return new ProcessResult(context) { Result = null };
 
-            if (value is string || !(value is IEnumerable))
-                return new ProcessResult(context) { Result = value };
+            var handlerType = typeof(IContentHandler<>).MakeGenericType(value.GetType());
+            var handler = (dynamic)serviceProvider?.GetService(handlerType);
+
+            if (handler != null)
+                return handler.HandleContent(value, context);
+
+            if (context.Value is IQueryable queryable)
+                return QueryableHandler.Instance.HandleContent(queryable, context);
 
             return new ProcessResult(context) { Result = value };
         }

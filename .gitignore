@@ -32,3 +32,8 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+
+# Coverage
+coverage.json
+coverage.xml
+lcov.info
