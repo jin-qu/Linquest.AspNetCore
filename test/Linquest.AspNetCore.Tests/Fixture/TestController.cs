@@ -9,10 +9,30 @@ namespace Linquest.AspNetCore.Tests.Fixture {
     [LinquestActionFilter]
     public class TestController : LinquestController {
 
+        public TestController() {
+            BeforeHandleQuery += (sender, args) => {
+                if (args.Context == null)
+                    throw new ArgumentNullException(nameof(args.Context));
+            };
+
+            AfterQueryExecute += (sender, args) => {
+                if (args.Context == null)
+                    throw new ArgumentNullException(nameof(args.Context));
+
+                if (args.Query == null)
+                    throw new ArgumentNullException(nameof(args.Context));
+            };
+        }
+
         [HttpGet]
         public string Get() {
             return "Hello World!";
         }
+
+        [LinquestMaxResult(3)]
+        [HttpGet]
+        [Route("NullValue")]
+        public IQueryable<Order> NullValue() => null;
 
         [HttpGet]
         [Route("Orders")]

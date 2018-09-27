@@ -23,6 +23,15 @@ namespace Linquest.AspNetCore.Tests {
         }
 
         [Fact]
+        public async Task ShouldReturnNull() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var value = await client.GetStringAsync("api/Test/NullValue");
+                Assert.Empty(value);
+            }
+        }
+
+        [Fact]
         public async Task ShouldGetFilteredOrders() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
@@ -37,13 +46,41 @@ namespace Linquest.AspNetCore.Tests {
         }
 
         [Fact]
-        public async Task ShouldGetPageData() {
+        public async Task ShouldGetOrdersIdGreaterThan2() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
-                var url = "api/Test/Orders?$skip=2&$take=2";
+                var url = $"api/Test/Orders?$skipWhile={WebUtility.UrlEncode("o => o.Id < 3")}";
                 var response = await client.GetStringAsync(url);
                 var orders = JsonConvert.DeserializeObject<List<Order>>(response);
 
+                Assert.Equal(3, orders.Count);
+                Assert.Equal(3, orders[0].Id);
+                Assert.Equal("Ord4", orders[1].No);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetOrdersIdLessThan3() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$takeWhile={WebUtility.UrlEncode("o => o.Id < 3")}";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+
+                Assert.Equal(2, orders.Count);
+                Assert.Equal(1, orders[0].Id);
+                Assert.Equal("Ord2", orders[1].No);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetPageData() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = "api/Test/Orders?$inlineCount=allpages&$skip=2&$take=2";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                
                 Assert.Equal(2, orders.Count);
                 Assert.Equal(3, orders[0].Id);
                 Assert.Equal("Ord4", orders[1].No);
@@ -105,6 +142,20 @@ namespace Linquest.AspNetCore.Tests {
                 var response = await client.GetStringAsync(url);
 
                 Assert.Equal("2", response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldReverseOrders() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$reverse";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+
+                Assert.Equal(5, orders.Count);
+                Assert.Equal(5, orders[0].Id);
+                Assert.Equal("Ord1", orders[4].No);
             }
         }
 
