@@ -24,10 +24,10 @@ namespace Linquest.AspNetCore {
                 return new ProcessResult(context) { Result = null };
 
             var handlerType = typeof(IContentHandler<>).MakeGenericType(value.GetType());
-            var handler = (dynamic)serviceProvider?.GetService(handlerType);
+            var handler = serviceProvider?.GetService(handlerType);
 
             if (handler != null)
-                return handler.HandleContent(value, context);
+                return ((IContentHandler)handler).HandleContent(value, context);
 
             if (context.Value is IQueryable queryable)
                 return QueryableHandler.Instance.HandleContent(queryable, context);

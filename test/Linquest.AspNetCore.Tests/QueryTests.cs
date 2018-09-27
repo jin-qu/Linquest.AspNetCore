@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -20,6 +21,7 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var value = await client.GetStringAsync("api/Test");
+
                 Assert.Equal("Hello World!", value);
             }
         }
@@ -29,6 +31,7 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var value = await client.GetStringAsync("api/Test/NullValue");
+
                 Assert.Empty(value);
             }
         }
@@ -46,6 +49,57 @@ namespace Linquest.AspNetCore.Tests {
                 Assert.Equal("Ord5", orders[1].No);
             }
         }
+
+        [Fact]
+        public async Task ShouldGetFilteredOrdersFromNativeController() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test2/Orders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+
+                Assert.Equal(2, orders.Count);
+                Assert.Equal(4, orders[0].Id);
+                Assert.Equal("Ord5", orders[1].No);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldNotFilterEnumerableOrders() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/EnumerableOrders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+
+                Assert.Equal(5, orders.Count);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldNotFilterNonLinquestOrders() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/NonLinquestOrders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+
+                Assert.Equal(5, orders.Count);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldSkipJsonResult() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/JsonOrders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+
+                Assert.Equal(5, orders.Count);
+            }
+        }
+
 
         [Fact]
         public async Task ShouldGetSortedOrders() {
@@ -117,13 +171,76 @@ namespace Linquest.AspNetCore.Tests {
         public async Task ShouldGetPageData() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
-                var url = "api/Test/Orders?$inlineCount=allpages&$skip=2&$take=2";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
 
-                Assert.Equal(2, orders.Count);
-                Assert.Equal(3, orders[0].Id);
-                Assert.Equal("Ord4", orders[1].No);
+                var url1 = "api/Test/Orders?$inlineCount=allpages&$skip=2&$take=2";
+                var response1 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url1));
+                var content1 = await response1.Content.ReadAsStringAsync();
+                var orders1 = JsonConvert.DeserializeObject<List<Order>>(content1);
+
+                Assert.Equal(2, orders1.Count);
+                Assert.Equal(3, orders1[0].Id);
+                Assert.Equal("Ord4", orders1[1].No);
+                var inlineCountHeader = response1.Headers.FirstOrDefault(h => h.Key == "X-InlineCount");
+                Assert.Equal("5", inlineCountHeader.Value.FirstOrDefault());
+
+                var url2 = "api/Test/Orders?$inlineCount=false&$skip=2&$take=2";
+                var response2 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url2));
+                var content2 = await response2.Content.ReadAsStringAsync();
+                var orders2 = JsonConvert.DeserializeObject<List<Order>>(content2);
+
+                Assert.Equal(2, orders2.Count);
+                Assert.Equal(3, orders2[0].Id);
+                Assert.Equal("Ord4", orders2[1].No);
+                inlineCountHeader = response2.Headers.FirstOrDefault(h => h.Key == "X-InlineCount");
+                Assert.Equal(default(KeyValuePair<string, IEnumerable<string>>), inlineCountHeader);
+
+                var url3 = "api/Test/Orders?$inlineCount&$take=2";
+                var response3 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url3));
+                var content3 = await response3.Content.ReadAsStringAsync();
+                var orders3 = JsonConvert.DeserializeObject<List<Order>>(content3);
+
+                Assert.Equal(2, orders3.Count);
+                Assert.Equal(1, orders3[0].Id);
+                Assert.Equal("Ord2", orders3[1].No);
+                inlineCountHeader = response3.Headers.FirstOrDefault(h => h.Key == "X-InlineCount");
+                Assert.Equal("5", inlineCountHeader.Value.FirstOrDefault());
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGroupByCustomer() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+
+                var url1 = $"api/Test/Orders?$groupBy={WebUtility.UrlEncode("o => o.Price")};{WebUtility.UrlEncode("(k, g) => g.Count()")}";
+                var response1 = await client.GetStringAsync(url1);
+                var counts = JsonConvert.DeserializeObject<List<int>>(response1);
+
+                Assert.Equal(new[] { 1, 1, 2, 1 }, counts);
+
+                var url2 = $"api/Test/Orders?$groupBy={WebUtility.UrlEncode("o => o.Price")}";
+                var response2 = await client.GetStringAsync(url2);
+                var groups = JsonConvert.DeserializeObject<List<List<Order>>>(response2);
+
+                Assert.Single(groups[0]);
+                Assert.Single(groups[1]);
+                Assert.Equal(2, groups[2].Count);
+                Assert.Single(groups[3]);
+
+                var url3 = $"api/Test/Orders?$groupBy=a;b;c";
+
+                await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync(url3));
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetDistinctPriceCount() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$select={WebUtility.UrlEncode("o => o.Price")}&$distinct&$count";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal(4, Convert.ToInt32(response));
             }
         }
 
@@ -140,6 +257,27 @@ namespace Linquest.AspNetCore.Tests {
                 Assert.Equal("Prd6", details[12].Product);
             }
         }
+
+        [Fact]
+        public async Task ShouldExecuteAggregate() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+
+                var url1 = $"api/Test/Orders?$select=Price&$aggregate={WebUtility.UrlEncode("(p1, p2) => p1 + p2")}";
+                var response1 = await client.GetStringAsync(url1);
+
+                Assert.Equal(3632f, float.Parse(response1));
+
+                var x = Consts.Orders.Select(o => o.Price).Aggregate(1f, (p1, p2) => p1 + p2);
+                var url2 = $"api/Test/Orders?$select=Price&$aggregate={WebUtility.UrlEncode("(p1, p2) => p1 + p2")};10";
+                var response2 = await client.GetStringAsync(url2);
+
+                Assert.Equal(3642f, float.Parse(response2), 1);
+
+                await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/Orders?$select=Price&$aggregate=a;b;c"));
+            }
+        }
+
 
         [Fact]
         public async Task ShouldExecuteAll() {
@@ -325,9 +463,25 @@ namespace Linquest.AspNetCore.Tests {
         }
 
         [Fact]
+        public async Task ShouldUseCustomHandler() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/GetAProduct";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal("42", response);
+            }
+        }
+
+        [Fact]
         public async Task ShouldThrowWhenMaxCountExceeded() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
+
+                var response = await client.GetStringAsync("api/Test/LimitedOrders?$take=3");
+                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+
+                Assert.Equal(3, orders.Count);
                 await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/LimitedOrders"));
                 await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/LimitedOrders?$take=4"));
             }
@@ -337,8 +491,23 @@ namespace Linquest.AspNetCore.Tests {
         public async Task ShouldThrowForUnsupportedQuery() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
+
                 await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/Orders?$intersect"));
             }
+        }
+
+        [Fact]
+        public void ShouldCheckArguments() {
+            var handler = new QueryableHandler();
+            var orders = Consts.Orders.AsQueryable();
+
+            Assert.Throws<ArgumentNullException>(() => handler.HandleContent(null, null));
+            Assert.Throws<ArgumentNullException>(() => handler.HandleContent(orders, null));
+
+            var handled = handler.HandleContent((object)orders, new ActionContext(null, orders, null, null));
+
+            Assert.Equal(orders.ToList(), handled.Result);
+            Assert.NotNull(handled.Context);
         }
 
         private TestServer CreateTestServer() {

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using Linquest.AspNetCore.Tests.Fixture.Model;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Linquest.AspNetCore.Tests.Fixture {
+    using Model;
 
     [Route("api/[controller]")]
     [LinquestActionFilter]
@@ -38,15 +40,28 @@ namespace Linquest.AspNetCore.Tests.Fixture {
         [Route("Orders")]
         public IQueryable<Order> Orders() => Consts.Orders.AsQueryable();
 
+        [HttpGet]
+        [Route("EnumerableOrders")]
+        public IEnumerable<Order> EnumerableOrders() => Consts.Orders;
+
         [LinquestMaxResult(3)]
         [HttpGet]
         [Route("LimitedOrders")]
         public IQueryable<Order> LimitedOrders() => Consts.Orders.AsQueryable();
 
+        [HttpGet]
+        [Route("GetAProduct")]
+        public Product GetAProduct() => new Product("P01", "Product01", "C01");
+
         [NonLinquestAction]
         [HttpGet]
         [Route("NonLinquestOrders")]
         public IQueryable<Order> NonLinquestOrders() => Consts.Orders.AsQueryable();
+
+        [NonLinquestAction]
+        [HttpGet]
+        [Route("JsonOrders")]
+        public JsonResult JsonOrders() => new JsonResult(Consts.Orders.ToList());
 
         protected override ProcessResult ProcessRequest(ActionContext actionContext) {
             if (actionContext.Descriptor == null)

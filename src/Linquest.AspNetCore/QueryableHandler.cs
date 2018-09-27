@@ -11,8 +11,13 @@ namespace Linquest.AspNetCore {
     public class QueryableHandler : IContentHandler<IQueryable> {
         private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>();
 
+        public virtual ProcessResult HandleContent(object query, ActionContext context) {
+            return HandleContent((IQueryable)query, context);
+        }
+
         public virtual ProcessResult HandleContent(IQueryable query, ActionContext context) {
             if (query == null) throw new ArgumentNullException(nameof(query));
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             var service = context.Service;
             if (service != null) {
@@ -25,13 +30,13 @@ namespace Linquest.AspNetCore {
             if (parameters == null || !parameters.Any())
                 return CreateResult(context, query, null, null);
 
-            var inlineCount = false;
+            var inlineCountEnabled = false;
             int? takeCount = null;
             IQueryable inlineCountQuery = null;
             foreach (var prm in parameters) {
                 switch (prm.Name.ToLowerInvariant()) {
                     case "$inlinecount":
-                        inlineCount = prm.Value != "false" || prm.Value == "allpages";
+                        inlineCountEnabled = prm.Value != "false" || prm.Value == "allpages";
                         break;
                     case "$filter":
                     case "$where":
@@ -54,22 +59,27 @@ namespace Linquest.AspNetCore {
                         query = Select(query, prm.Value);
                         break;
                     case "$skip":
+                        if (inlineCountEnabled && inlineCountQuery == null) {
+                            inlineCountQuery = query;
+                        }
                         query = Skip(query, Convert.ToInt32(prm.Value));
                         break;
                     case "$top":
                     case "$take":
-                        inlineCountQuery = query;
+                        if (inlineCountEnabled && inlineCountQuery == null) {
+                            inlineCountQuery = query;
+                        }
                         var take = Convert.ToInt32(prm.Value);
                         query = Take(query, take);
                         takeCount = take;
                         break;
                     case "$groupby":
                         inlineCountQuery = null;
-                        var prms = prm.Value.Split(';');
-                        if (prms.Length > 2) throw new Exception("Invalid groupBy expression");
+                        var keyValue = prm.Value.Split(';');
+                        if (keyValue.Length > 2) throw new Exception("Invalid groupBy expression");
 
-                        var keySelector = prms[0];
-                        var valueSelector = prms.Length == 2 ? prms[1] : null;
+                        var keySelector = keyValue[0];
+                        var valueSelector = keyValue.Length == 2 ? keyValue[1] : null;
                         query = GroupBy(query, keySelector, valueSelector);
                         break;
                     case "$distinct":
@@ -85,12 +95,20 @@ namespace Linquest.AspNetCore {
                         query = SelectMany(query, prm.Value);
                         break;
                     case "$skipwhile":
+                        inlineCountQuery = null;
                         query = SkipWhile(query, prm.Value);
                         break;
                     case "$takewhile":
-                        inlineCountQuery = query;
+                        inlineCountQuery = null;
                         query = TakeWhile(query, prm.Value);
                         break;
+                    case "$aggregate":
+                        var funcSeed = prm.Value.Split(';');
+                        if (funcSeed.Length > 2) throw new Exception("Invalid aggregate expression");
+
+                        var func = funcSeed[0];
+                        var seed = funcSeed.Length == 2 ? funcSeed[1] : null;
+                        return CreateResult(context, Aggregate(query, func, seed), inlineCountQuery);
                     case "$all":
                         return CreateResult(context, All(query, prm.Value), inlineCountQuery);
                     case "$any":
@@ -163,7 +181,9 @@ namespace Linquest.AspNetCore {
         }
 
         public virtual IQueryable GroupBy(IQueryable query, string keySelector, string elementSelector) {
-            return query.GroupBy(keySelector, elementSelector);
+            return string.IsNullOrWhiteSpace(elementSelector)
+                ? query.GroupBy(keySelector)
+                : query.GroupBy(keySelector, elementSelector);
         }
 
         public virtual IQueryable Distinct(IQueryable query) {
@@ -184,6 +204,12 @@ namespace Linquest.AspNetCore {
 
         public virtual IQueryable TakeWhile(IQueryable query, string predicate) {
             return query.TakeWhile(predicate);
+        }
+
+        public virtual object Aggregate(IQueryable query, string func, string seed = null) {
+            return string.IsNullOrWhiteSpace(seed)
+                ? query.Aggregate(func)
+                : query.Aggregate(Convert.ToDouble(seed), func);
         }
 
         public virtual bool All(IQueryable query, string predicate) {
