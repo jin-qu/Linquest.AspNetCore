@@ -19,20 +19,15 @@ namespace Linquest.AspNetCore {
             Order = 0;
         }
 
-        public LinquestActionFilterAttribute(int maxResultCount) {
-            Order = 0;
-            MaxResultCount = maxResultCount;
-        }
-
-        public int? MaxResultCount { get; }
-
         public override void OnResultExecuting(ResultExecutingContext context) {
             base.OnResultExecuting(context);
 
-            if (!(context.Result is ObjectResult objectResult)) return;
+            if (!(context.Result is ObjectResult objectResult)) 
+                return;
 
-            if (context.ActionDescriptor is ControllerActionDescriptor cad &&
-                cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonLinquestActionAttribute))) return;
+            var cad = context.ActionDescriptor as ControllerActionDescriptor;
+            if (cad != null && cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonLinquestActionAttribute))) 
+                return;
 
             var value = objectResult.Value;
             var service = context.Controller as ILinquestService;
@@ -40,20 +35,23 @@ namespace Linquest.AspNetCore {
             var response = context.HttpContext.Response;
 
             // translate the request query
-            var ac = new ActionContext(context.ActionDescriptor, value, GetParameters(request), service) {
-                MaxResultCount = MaxResultCount
+            var maxAttr = cad?.MethodInfo.CustomAttributes.FirstOrDefault(a => a.AttributeType == typeof(LinquestMaxResultAttribute));
+            var max = (int?)maxAttr?.ConstructorArguments.First().Value;
+            var ac = new ActionContext(context.ActionDescriptor, value, GetParameters(request), service)
+            {
+                MaxResultCount = max
             };
             var processResult = ProcessRequest(ac, context.HttpContext.RequestServices);
             context.Result = HandleResponse(processResult, response);
         }
 
-        protected virtual IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) 
+        protected virtual IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request)
             => Helper.GetParameters(request);
 
-        protected virtual ProcessResult ProcessRequest(ActionContext context, IServiceProvider serviceProvider) 
+        protected virtual ProcessResult ProcessRequest(ActionContext context, IServiceProvider serviceProvider)
             => Helper.DefaultRequestProcessor(context, serviceProvider);
 
-        protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response) 
+        protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response)
             => Helper.HandleResponse(result, response);
     }
 }
