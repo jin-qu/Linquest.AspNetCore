@@ -1,13 +1,15 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Linquest.AspNetCore.Tests {
-    using System;
     using Fixture;
     using Fixture.Model;
 
@@ -46,6 +48,44 @@ namespace Linquest.AspNetCore.Tests {
         }
 
         [Fact]
+        public async Task ShouldGetSortedOrders() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+
+                var url1 = $"api/Test/Orders?$orderBy={WebUtility.UrlEncode("o => o.Price")}&$thenByDescending={WebUtility.UrlEncode("o => o.Id")}";
+                var response1 = await client.GetStringAsync(url1);
+                var orders1 = JsonConvert.DeserializeObject<List<Order>>(response1);
+
+                Assert.Equal(5, orders1.Count);
+                Assert.Equal(4, orders1[0].Id);
+                Assert.Equal("Ord3", orders1[4].No);
+
+                var url2 = $"api/Test/Orders?$orderByDescending={WebUtility.UrlEncode("o => o.Price")}&$thenBy={WebUtility.UrlEncode("o => o.Id")}";
+                var response2 = await client.GetStringAsync(url2);
+                var orders2 = JsonConvert.DeserializeObject<List<Order>>(response2);
+
+                Assert.Equal(5, orders2.Count);
+                Assert.Equal(3, orders2[0].Id);
+                Assert.Equal("Ord4", orders2[4].No);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldProjectOrders() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$select={WebUtility.UrlEncode("o => new { o.Id, o.No }")}";
+                var response = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<JObject>>(response);
+
+                Assert.Equal(5, orders.Count);
+                Assert.Equal(2, orders[0].Properties().Count());
+                Assert.Equal(1, orders[0].Property("id").Value);
+                Assert.Equal("Ord5", orders[4].Property("no").Value);
+            }
+        }
+
+        [Fact]
         public async Task ShouldGetOrdersIdGreaterThan2() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
@@ -80,7 +120,7 @@ namespace Linquest.AspNetCore.Tests {
                 var url = "api/Test/Orders?$inlineCount=allpages&$skip=2&$take=2";
                 var response = await client.GetStringAsync(url);
                 var orders = JsonConvert.DeserializeObject<List<Order>>(response);
-                
+
                 Assert.Equal(2, orders.Count);
                 Assert.Equal(3, orders[0].Id);
                 Assert.Equal("Ord4", orders[1].No);
@@ -88,7 +128,7 @@ namespace Linquest.AspNetCore.Tests {
         }
 
         [Fact]
-        public async Task ShouldSelectDetails() {
+        public async Task ShouldSelectManyDetails() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$selectMany={WebUtility.UrlEncode("o => o.OrderDetails")}";
@@ -157,6 +197,17 @@ namespace Linquest.AspNetCore.Tests {
         }
 
         [Fact]
+        public async Task ShouldExecuteSum() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$sum={WebUtility.UrlEncode("o => o.Price")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Equal(3632f, float.Parse(response));
+            }
+        }
+
+        [Fact]
         public async Task ShouldExecuteCount() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
@@ -164,6 +215,98 @@ namespace Linquest.AspNetCore.Tests {
                 var response = await client.GetStringAsync(url);
 
                 Assert.Equal("2", response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetFirstOrder() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$first={WebUtility.UrlEncode("o => o.Id > 3")}";
+                var response = await client.GetStringAsync(url);
+                var order = JsonConvert.DeserializeObject<Order>(response);
+
+                Assert.Equal(4, order.Id);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetNullForNonExistingFirstOrder() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$firstOrDefault={WebUtility.UrlEncode("o => o.Id > 5")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Empty(response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetSingleOrder() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$single={WebUtility.UrlEncode("o => o.Id > 4")}";
+                var response = await client.GetStringAsync(url);
+                var order = JsonConvert.DeserializeObject<Order>(response);
+
+                Assert.Equal(5, order.Id);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetNullForNonExistingSingleOrder() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$singleOrDefault={WebUtility.UrlEncode("o => o.Id > 5")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Empty(response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetLastOrder() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$last={WebUtility.UrlEncode("o => o.Id > 2")}";
+                var response = await client.GetStringAsync(url);
+                var order = JsonConvert.DeserializeObject<Order>(response);
+
+                Assert.Equal(5, order.Id);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetNullForNonExistingLastOrder() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$lastOrDefault={WebUtility.UrlEncode("o => o.Id > 5")}";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Empty(response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetElementAtIndex() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = "api/Test/Orders?$elementAt=3";
+                var response = await client.GetStringAsync(url);
+                var order = JsonConvert.DeserializeObject<Order>(response);
+
+                Assert.Equal(4, order.Id);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldGetNullForNonExistingElementAtIndex() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                var url = $"api/Test/Orders?$elementAtOrDefault=5";
+                var response = await client.GetStringAsync(url);
+
+                Assert.Empty(response);
             }
         }
 
@@ -187,6 +330,14 @@ namespace Linquest.AspNetCore.Tests {
                 var client = testServer.CreateClient();
                 await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/LimitedOrders"));
                 await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/LimitedOrders?$take=4"));
+            }
+        }
+
+        [Fact]
+        public async Task ShouldThrowForUnsupportedQuery() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/Orders?$intersect"));
             }
         }
 

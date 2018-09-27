@@ -33,22 +33,22 @@ namespace Linquest.AspNetCore {
                     case "$inlinecount":
                         inlineCount = prm.Value != "false" || prm.Value == "allpages";
                         break;
-                    case "$oftype":
-                        inlineCountQuery = null;
-                        query = OfType(query, prm.Value);
-                        break;
                     case "$filter":
                     case "$where":
                         inlineCountQuery = null;
                         query = Where(query, prm.Value);
                         break;
                     case "$orderby":
-                    case "$thenby":
                         query = OrderBy(query, prm.Value);
                         break;
-                    case "$expand":
-                    case "$include":
-                        query = Include(query, prm.Value);
+                    case "$orderbydescending":
+                        query = OrderbyDescending(query, prm.Value);
+                        break;
+                    case "$thenby":
+                        query = ThenBy(query, prm.Value);
+                        break;
+                    case "$thenbydescending":
+                        query = ThenByDescending(query, prm.Value);
                         break;
                     case "$select":
                         query = Select(query, prm.Value);
@@ -74,7 +74,7 @@ namespace Linquest.AspNetCore {
                         break;
                     case "$distinct":
                         inlineCountQuery = null;
-                        query = Distinct(query, prm.Value);
+                        query = Distinct(query);
                         break;
                     case "$reverse":
                         query = Reverse(query);
@@ -118,6 +118,10 @@ namespace Linquest.AspNetCore {
                         return CreateResult(context, Last(query, prm.Value), inlineCountQuery);
                     case "$lastordefault":
                         return CreateResult(context, LastOrDefault(query, prm.Value), inlineCountQuery);
+                    case "$elementat":
+                        return CreateResult(context, ElementAt(query, Convert.ToInt32(prm.Value)), inlineCountQuery);
+                    case "$elementatordefault":
+                        return CreateResult(context, ElementAtOrDefault(query, Convert.ToInt32(prm.Value)), inlineCountQuery);
                     default:
                         throw new Exception($"Unknown query parameter {prm.Value}");
                 }
@@ -126,47 +130,28 @@ namespace Linquest.AspNetCore {
             return CreateResult(context, query, takeCount, inlineCountQuery);
         }
 
-        public virtual IQueryable OfType(IQueryable query, string ofType) {
-            if (string.IsNullOrWhiteSpace(ofType)) return query;
-
-            var elementType = query.ElementType;
-
-            // use this type's namespace and assembly information to find wanted type
-            var ofTypeFullName = $"{elementType.Namespace}.{ofType}, {elementType.GetTypeInfo().Assembly.GetName()}";
-            var ofTypeType = Type.GetType(ofTypeFullName);
-            if (ofTypeType == null)
-                throw new ArgumentException($"Could not find type information for {ofTypeFullName}");
-
-            // call Queryable's OfType method
-            var mi = typeof(Queryable).GetMethod("OfType");
-            var gmi = mi.MakeGenericMethod(ofTypeType);
-            query = (IQueryable)gmi.Invoke(null, new object[] { query });
-            return query;
-        }
-
         public virtual IQueryable Where(IQueryable query, string filter) {
-            return string.IsNullOrWhiteSpace(filter) ? query : query.Where(filter);
+            return query.Where(filter);
         }
 
         public virtual IQueryable OrderBy(IQueryable query, string orderBy) {
-            return string.IsNullOrWhiteSpace(orderBy) ? query : query.OrderBy(orderBy);
+            return query.OrderBy(orderBy);
         }
 
-        public virtual IQueryable Include(IQueryable query, string expand) {
-            if (string.IsNullOrWhiteSpace(expand)) return query;
+        public virtual IQueryable OrderbyDescending(IQueryable query, string orderBy) {
+            return query.OrderByDescending(orderBy);
+        }
 
-            var dynQuery = (dynamic)query;
-            expand.Split(',').ToList()
-                .ForEach(e => { dynQuery = dynQuery.Include(e.Trim()); });
-            return dynQuery;
+        public virtual IQueryable ThenBy(IQueryable query, string orderBy) {
+            return query.ThenBy(orderBy);
+        }
+
+        public virtual IQueryable ThenByDescending(IQueryable query, string orderBy) {
+            return query.ThenByDescending(orderBy);
         }
 
         public virtual IQueryable Select(IQueryable query, string projection) {
-            if (string.IsNullOrWhiteSpace(projection)) return query;
-
-            return projection.Contains(",") || projection.Contains(" as ") ?
-                query.Select($"New({projection})") :
-                query.Select(projection);
+            return query.Select(projection);
         }
 
         public virtual IQueryable Skip(IQueryable query, int count) {
@@ -181,12 +166,8 @@ namespace Linquest.AspNetCore {
             return query.GroupBy(keySelector, elementSelector);
         }
 
-        public virtual IQueryable Distinct(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector)) {
-                query = Select(query, elementSelector);
-            }
-
-            return Queryable.Distinct((dynamic)query);
+        public virtual IQueryable Distinct(IQueryable query) {
+            return query.Distinct();
         }
 
         public virtual IQueryable Reverse(IQueryable query) {
@@ -210,99 +191,59 @@ namespace Linquest.AspNetCore {
         }
 
         public virtual bool Any(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate)) {
-                query = Where(query, predicate);
-            }
-
-            return query.Any();
+            return query.Any(predicate);
         }
 
         public virtual object Avg(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector)) {
-                query = query.Select(elementSelector);
-            }
-
-            return Queryable.Average((dynamic)query);
+            return query.Average(elementSelector);
         }
 
         public virtual object Max(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector)) {
-                query = query.Select(elementSelector);
-            }
-
-            return Queryable.Max((dynamic)query);
+            return query.Max(elementSelector);
         }
 
         public virtual object Min(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector)) {
-                query = query.Select(elementSelector);
-            }
-
-            return Queryable.Min((dynamic)query);
+            return query.Min(elementSelector);
         }
 
         public virtual object Sum(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector)) {
-                query = query.Select(elementSelector);
-            }
-
-            return Queryable.Sum((dynamic)query);
+            return query.Sum(elementSelector);
         }
 
         public virtual object Count(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate)) {
-                query = Where(query, predicate);
-            }
-
-            return Queryable.Count((dynamic)query);
+            return query.Count(predicate);
         }
 
         public virtual object First(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate)) {
-                query = Where(query, predicate);
-            }
-
-            return Queryable.First((dynamic)query);
+            return query.First(predicate);
         }
 
         public virtual object FirstOrDefault(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate)) {
-                query = Where(query, predicate);
-            }
-
-            return Queryable.FirstOrDefault((dynamic)query);
+            return query.FirstOrDefault(predicate);
         }
 
         public virtual object Single(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate)) {
-                query = Where(query, predicate);
-            }
-
-            return Queryable.Single((dynamic)query);
+            return query.Single(predicate);
         }
 
         public virtual object SingleOrDefault(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate)) {
-                query = Where(query, predicate);
-            }
-
-            return Queryable.SingleOrDefault((dynamic)query);
+            return query.SingleOrDefault(predicate);
         }
 
         public virtual object Last(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate)) {
-                query = Where(query, predicate);
-            }
-
-            return Queryable.Last((dynamic)query);
+            return query.Last(predicate);
         }
 
         public virtual object LastOrDefault(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate)) {
-                query = Where(query, predicate);
-            }
+            return query.LastOrDefault(predicate);
+        }
 
-            return Queryable.LastOrDefault((dynamic)query);
+        public virtual object ElementAt(IQueryable query, int index) {
+            return query.ElementAt(index);
+        }
+
+        public virtual object ElementAtOrDefault(IQueryable query, int index) {
+            return query.ElementAtOrDefault(index);
         }
 
         protected static ProcessResult CreateResult(ActionContext context, IQueryable query, int? takeCount, IQueryable inlineCountQuery) {
