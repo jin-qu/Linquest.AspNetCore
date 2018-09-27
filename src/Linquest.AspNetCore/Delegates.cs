@@ -5,12 +5,12 @@ namespace Linquest.AspNetCore {
 
     public class BeforeQueryEventArgs : EventArgs {
 
-        public BeforeQueryEventArgs(ActionContext actionContext, IQueryable query) {
-            ActionContext = actionContext;
+        public BeforeQueryEventArgs(ActionContext context, IQueryable query) {
+            Context = context;
             Query = query;
         }
 
-        public ActionContext ActionContext { get; }
+        public ActionContext Context { get; }
 
         public IQueryable Query { get; set; }
     }
@@ -19,13 +19,13 @@ namespace Linquest.AspNetCore {
 
     public class AfterQueryEventArgs : EventArgs {
 
-        public AfterQueryEventArgs(ActionContext actionContext, IQueryable query, object result) {
-            ActionContext = actionContext;
+        public AfterQueryEventArgs(ActionContext context, IQueryable query, object result) {
+            Context = context;
             Query = query;
             Result = result;
         }
 
-        public ActionContext ActionContext { get; }
+        public ActionContext Context { get; }
 
         public IQueryable Query { get; }
 

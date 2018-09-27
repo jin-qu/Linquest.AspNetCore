@@ -11,19 +11,19 @@ namespace Linquest.AspNetCore {
     public class QueryableHandler : IContentHandler<IQueryable> {
         private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>();
 
-        public virtual ProcessResult HandleContent(IQueryable query, ActionContext actionContext) {
+        public virtual ProcessResult HandleContent(IQueryable query, ActionContext context) {
             if (query == null) throw new ArgumentNullException(nameof(query));
 
-            var service = actionContext.Service;
+            var service = context.Service;
             if (service != null) {
-                var args = new BeforeQueryEventArgs(actionContext, query);
+                var args = new BeforeQueryEventArgs(context, query);
                 service.OnBeforeHandleQuery(args);
                 query = args.Query;
             }
 
-            var parameters = actionContext.Parameters;
+            var parameters = context.Parameters;
             if (parameters == null || !parameters.Any())
-                return CreateResult(actionContext, query, null, null);
+                return CreateResult(context, query, null, null);
 
             var inlineCount = false;
             int? takeCount = null;
@@ -92,37 +92,37 @@ namespace Linquest.AspNetCore {
                         query = TakeWhile(query, prm.Value);
                         break;
                     case "$all":
-                        return CreateResult(actionContext, All(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, All(query, prm.Value), inlineCountQuery);
                     case "$any":
-                        return CreateResult(actionContext, Any(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, Any(query, prm.Value), inlineCountQuery);
                     case "$average":
-                        return CreateResult(actionContext, Avg(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, Avg(query, prm.Value), inlineCountQuery);
                     case "$max":
-                        return CreateResult(actionContext, Max(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, Max(query, prm.Value), inlineCountQuery);
                     case "$min":
-                        return CreateResult(actionContext, Min(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, Min(query, prm.Value), inlineCountQuery);
                     case "$sum":
-                        return CreateResult(actionContext, Sum(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, Sum(query, prm.Value), inlineCountQuery);
                     case "$count":
-                        return CreateResult(actionContext, Count(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, Count(query, prm.Value), inlineCountQuery);
                     case "$first":
-                        return CreateResult(actionContext, First(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, First(query, prm.Value), inlineCountQuery);
                     case "$firstordefault":
-                        return CreateResult(actionContext, FirstOrDefault(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, FirstOrDefault(query, prm.Value), inlineCountQuery);
                     case "$single":
-                        return CreateResult(actionContext, Single(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, Single(query, prm.Value), inlineCountQuery);
                     case "$singleordefault":
-                        return CreateResult(actionContext, SingleOrDefault(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, SingleOrDefault(query, prm.Value), inlineCountQuery);
                     case "$last":
-                        return CreateResult(actionContext, Last(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, Last(query, prm.Value), inlineCountQuery);
                     case "$lastordefault":
-                        return CreateResult(actionContext, LastOrDefault(query, prm.Value), inlineCountQuery);
+                        return CreateResult(context, LastOrDefault(query, prm.Value), inlineCountQuery);
                     default:
                         throw new Exception($"Unknown query parameter {prm.Value}");
                 }
             }
 
-            return CreateResult(actionContext, query, takeCount, inlineCountQuery);
+            return CreateResult(context, query, takeCount, inlineCountQuery);
         }
 
         public virtual IQueryable OfType(IQueryable query, string ofType) {
@@ -304,32 +304,32 @@ namespace Linquest.AspNetCore {
             return Queryable.LastOrDefault((dynamic)query);
         }
 
-        protected static ProcessResult CreateResult(ActionContext actionContext, IQueryable query, int? takeCount, IQueryable inlineCountQuery) {
-            int? max = actionContext.MaxResultCount ?? actionContext.Service?.MaxResultCount;
+        protected static ProcessResult CreateResult(ActionContext context, IQueryable query, int? takeCount, IQueryable inlineCountQuery) {
+            int? max = context.MaxResultCount ?? context.Service?.MaxResultCount;
             if (max > 0) {
                 var count = takeCount ?? Queryable.Count((dynamic)query);
                 if (count > max) throw new Exception($"Maximum allowed read count exceeded");
             }
 
-            var service = actionContext.Service;
+            var service = context.Service;
             if (service == null)
-                return CreateResult(actionContext, Enumerable.ToList((dynamic)query), inlineCountQuery);
+                return CreateResult(context, Enumerable.ToList((dynamic)query), inlineCountQuery);
 
-            var beforeArgs = new BeforeQueryEventArgs(actionContext, query);
+            var beforeArgs = new BeforeQueryEventArgs(context, query);
             service.OnBeforeQueryExecute(beforeArgs);
             query = beforeArgs.Query;
 
             var result = Enumerable.ToList((dynamic)query);
-            var afterArgs = new AfterQueryEventArgs(actionContext, query, result);
+            var afterArgs = new AfterQueryEventArgs(context, query, result);
             service.OnAfterQueryExecute(afterArgs);
             result = afterArgs.Result;
 
-            return CreateResult(actionContext, result, inlineCountQuery);
+            return CreateResult(context, result, inlineCountQuery);
         }
 
-        protected static ProcessResult CreateResult(ActionContext actionContext, object result, IQueryable inlineCountQuery) {
+        protected static ProcessResult CreateResult(ActionContext context, object result, IQueryable inlineCountQuery) {
             int? inlineCount = inlineCountQuery != null ? Queryable.Count((dynamic)inlineCountQuery) : null;
-            return new ProcessResult(actionContext) { Result = result, InlineCount = inlineCount };
+            return new ProcessResult(context) { Result = result, InlineCount = inlineCount };
         }
 
         public static QueryableHandler Instance => _instance.Value;

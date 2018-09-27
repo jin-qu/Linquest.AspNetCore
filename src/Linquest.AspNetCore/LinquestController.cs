@@ -10,20 +10,36 @@ namespace Linquest.AspNetCore {
         public event AfterQueryDelegate AfterQueryExecute;
         public int? MaxResultCount { get; set; }
 
-        public ProcessResult ProcessRequest(ActionContext actionContext) {
-            return Helper.DefaultRequestProcessor(actionContext, this.HttpContext.RequestServices);
+        protected virtual ProcessResult ProcessRequest(ActionContext context) {
+            return Helper.DefaultRequestProcessor(context, this.HttpContext.RequestServices);
         }
 
-        void ILinquestService.OnBeforeHandleQuery(BeforeQueryEventArgs args) {
+        ProcessResult ILinquestService.ProcessRequest(ActionContext context) {
+            return ProcessRequest(context);
+        }
+
+        protected void OnBeforeHandleQuery(BeforeQueryEventArgs args) {
             BeforeHandleQuery?.Invoke(this, args);
         }
 
-        void ILinquestService.OnBeforeQueryExecute(BeforeQueryEventArgs args) {
+        void ILinquestService.OnBeforeHandleQuery(BeforeQueryEventArgs args) {
+            OnBeforeHandleQuery(args);
+        }
+
+        protected void OnBeforeQueryExecute(BeforeQueryEventArgs args) {
             BeforeQueryExecute?.Invoke(this, args);
         }
 
-        void ILinquestService.OnAfterQueryExecute(AfterQueryEventArgs args) {
+        void ILinquestService.OnBeforeQueryExecute(BeforeQueryEventArgs args) {
+            OnBeforeQueryExecute(args);
+        }
+
+        protected void OnAfterQueryExecute(AfterQueryEventArgs args) {
             AfterQueryExecute?.Invoke(this, args);
+        }
+
+        void ILinquestService.OnAfterQueryExecute(AfterQueryEventArgs args) {
+            OnAfterQueryExecute(args);
         }
     }
 }

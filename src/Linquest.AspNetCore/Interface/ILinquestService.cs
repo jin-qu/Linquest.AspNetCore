@@ -16,6 +16,6 @@ namespace Linquest.AspNetCore.Interface {
 
         int? MaxResultCount { get; set; }
 
-        ProcessResult ProcessRequest(ActionContext actionContext);
+        ProcessResult ProcessRequest(ActionContext context);
     }
 }

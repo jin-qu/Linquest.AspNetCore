@@ -2,11 +2,11 @@ namespace Linquest.AspNetCore {
 
     public class ProcessResult {
 
-        public ProcessResult (ActionContext actionContext) {
-            ActionContext = actionContext;
+        public ProcessResult (ActionContext context) {
+            Context = context;
         }
 
-        public ActionContext ActionContext { get; }
+        public ActionContext Context { get; }
 
         public object Result { get; set; }
 

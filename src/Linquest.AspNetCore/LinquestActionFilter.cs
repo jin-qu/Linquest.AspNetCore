@@ -40,18 +40,18 @@ namespace Linquest.AspNetCore {
             var response = context.HttpContext.Response;
 
             // translate the request query
-            var actionContext = new ActionContext(context.ActionDescriptor, value, GetParameters(request), service) {
+            var ac = new ActionContext(context.ActionDescriptor, value, GetParameters(request), service) {
                 MaxResultCount = MaxResultCount
             };
-            var processResult = ProcessRequest(actionContext, context.HttpContext.RequestServices);
+            var processResult = ProcessRequest(ac, context.HttpContext.RequestServices);
             context.Result = HandleResponse(processResult, response);
         }
 
         protected virtual IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) 
             => Helper.GetParameters(request);
 
-        protected virtual ProcessResult ProcessRequest(ActionContext actionContext, IServiceProvider serviceProvider) 
-            => Helper.DefaultRequestProcessor(actionContext, serviceProvider);
+        protected virtual ProcessResult ProcessRequest(ActionContext context, IServiceProvider serviceProvider) 
+            => Helper.DefaultRequestProcessor(context, serviceProvider);
 
         protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response) 
             => Helper.HandleResponse(result, response);
