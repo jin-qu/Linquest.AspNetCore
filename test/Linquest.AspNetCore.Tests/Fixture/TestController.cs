@@ -16,5 +16,10 @@ namespace Linquest.AspNetCore.Tests.Fixture {
         [HttpGet]
         [Route("Orders")]
         public IQueryable<Order> Orders() => Consts.Orders.AsQueryable();
+
+        [LinquestActionFilter(3)]
+        [HttpGet]
+        [Route("LimitedOrders")]
+        public IQueryable<Order> LimitedOrders() => Consts.Orders.AsQueryable();
     }
 }

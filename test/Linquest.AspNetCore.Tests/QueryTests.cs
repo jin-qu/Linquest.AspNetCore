@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Xunit;
 
 namespace Linquest.AspNetCore.Tests {
+    using System;
     using Fixture;
     using Fixture.Model;
 
@@ -60,6 +61,15 @@ namespace Linquest.AspNetCore.Tests {
                 Assert.Equal(16, details.Count);
                 Assert.Equal(36, details[4].Count);
                 Assert.Equal("Prd6", details[12].Product);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldThrowWhenMaxCountExceeded() {
+            using (var testServer = CreateTestServer()) {
+                var client = testServer.CreateClient();
+                await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/LimitedOrders"));
+                await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/LimitedOrders?$take=4"));
             }
         }
 

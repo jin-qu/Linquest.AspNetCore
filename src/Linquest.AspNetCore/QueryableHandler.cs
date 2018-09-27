@@ -23,7 +23,7 @@ namespace Linquest.AspNetCore {
 
             var parameters = actionContext.Parameters;
             if (parameters == null || !parameters.Any())
-                return CreateResult(actionContext, Enumerable.ToList((dynamic)query));
+                return CreateResult(actionContext, query, null, null);
 
             var inlineCount = false;
             int? takeCount = null;
@@ -122,7 +122,7 @@ namespace Linquest.AspNetCore {
                 }
             }
 
-            return CreateResult(actionContext, query, inlineCountQuery);
+            return CreateResult(actionContext, query, takeCount, inlineCountQuery);
         }
 
         public virtual IQueryable OfType(IQueryable query, string ofType) {
@@ -304,10 +304,10 @@ namespace Linquest.AspNetCore {
             return Queryable.LastOrDefault((dynamic)query);
         }
 
-        private static ProcessResult CreateResult(ActionContext actionContext, IQueryable query, int? takeCount, IQueryable inlineCountQuery = null) {
+        protected static ProcessResult CreateResult(ActionContext actionContext, IQueryable query, int? takeCount, IQueryable inlineCountQuery) {
             int? max = actionContext.MaxResultCount ?? actionContext.Service?.MaxResultCount;
             if (max > 0) {
-                var count = takeCount ?? Queryable.Count((dynamic)inlineCountQuery);
+                var count = takeCount ?? Queryable.Count((dynamic)query);
                 if (count > max) throw new Exception($"Maximum allowed read count exceeded");
             }
 
@@ -327,7 +327,7 @@ namespace Linquest.AspNetCore {
             return CreateResult(actionContext, result, inlineCountQuery);
         }
 
-        private static ProcessResult CreateResult(ActionContext actionContext, object result, IQueryable inlineCountQuery = null) {
+        protected static ProcessResult CreateResult(ActionContext actionContext, object result, IQueryable inlineCountQuery) {
             int? inlineCount = inlineCountQuery != null ? Queryable.Count((dynamic)inlineCountQuery) : null;
             return new ProcessResult(actionContext) { Result = result, InlineCount = inlineCount };
         }
