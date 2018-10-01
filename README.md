@@ -87,3 +87,38 @@ public class Test2Controller {
   }
 }
 ```
+
+# Processing Values
+Linquest handles IQueryable values by default, using QueryableHandler class.
+You can change handlers by injecting alternative implementations.
+
+#### Add new IQueryable handler at Startup
+```csharp
+public override void ConfigureServices(IServiceCollection services) {
+  // ...
+  services.AddSingleton<IContentHandler<IQueryable>, ProductHandler>();
+}
+```
+### Add a handler for custom type, like PetaPoco IQuery
+```csharp
+public override void ConfigureServices(IServiceCollection services) {
+  // ...
+  services.AddSingleton<IContentHandler<PetaPoco.IQuery>, PetaPocoQueryHandler>();
+}
+
+// ...
+
+public class PetaPocoQueryHandler: IContentHandler<PetaPoco.IQuery> {
+  public virtual ProcessResult HandleContent(object query, ActionContext context) {
+      return HandleContent((IQueryable)query, context);
+  }
+
+  public virtual ProcessResult HandleContent(IQueryable query, ActionContext context) {
+  }
+}
+```
+This way, you can apply linquest query parameters to any type.
+
+# License
+Linquest.AspNetCore is under the [MIT License](LICENSE).
+
