@@ -99,7 +99,7 @@ public override void ConfigureServices(IServiceCollection services) {
   services.AddSingleton<IContentHandler<IQueryable>, ProductHandler>();
 }
 ```
-### Add a handler for custom type, like PetaPoco IQuery
+#### Add a handler for custom type, like PetaPoco IQuery
 ```csharp
 public override void ConfigureServices(IServiceCollection services) {
   // ...
