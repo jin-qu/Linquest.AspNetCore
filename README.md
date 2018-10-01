@@ -68,4 +68,22 @@ public class TestController : ILinquestService {
 
 If you don't need intercepting the Linquest operations, you can use LinquestActionFilter;
 #### 1. With Controller
+```csharp
+[LinquestActionFilter]
+public class Test2Controller {
 
+  public IQueryable<Company> Companies() {
+    // ...
+  }
+}
+```
+#### 2. With Action
+```csharp
+public class Test2Controller {
+
+  [LinquestActionFilter]
+  public IQueryable<Company> Companies() {
+    // ...
+  }
+}
+```
