@@ -109,11 +109,13 @@ public override void ConfigureServices(IServiceCollection services) {
 // ...
 
 public class PetaPocoQueryHandler: IContentHandler<PetaPoco.IQuery> {
+
   public virtual ProcessResult HandleContent(object query, ActionContext context) {
       return HandleContent((IQueryable)query, context);
   }
 
   public virtual ProcessResult HandleContent(IQueryable query, ActionContext context) {
+    // ...
   }
 }
 ```
