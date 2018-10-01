@@ -9,3 +9,14 @@ Linquest Asp.Net Core backend.
 
 [![GitHub stars](https://img.shields.io/github/stars/jin-qu/Linquest.AspNetCore.svg?style=social&label=Star)](https://github.com/jin-qu/Linquest.AspNetCore)
 [![GitHub forks](https://img.shields.io/github/forks/jin-qu/Linquest.AspNetCore.svg?style=social&label=Fork)](https://github.com/jin-qu/Linquest.AspNetCore)
+
+# Installation
+
+#### Package Manager
+```
+dotnet add package Linquest.AspNetCore
+```
+#### .Net CLI
+```
+dotnet add package Linquest.AspNetCore
+```
