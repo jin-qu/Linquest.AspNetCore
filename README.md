@@ -20,3 +20,52 @@ dotnet add package Linquest.AspNetCore
 ```
 dotnet add package Linquest.AspNetCore
 ```
+
+# Getting Started
+
+To add support for linquest queries, you need LinquestActionFilter.
+
+To use callbacks and customizing the request processing;
+#### 1. You can inherit your Controller from LinquestController
+```csharp
+public class TestController : LinquestController {
+
+  public IQueryable<Company> Companies() {
+    // ...
+  }
+}
+```
+#### 2. You can implement ILinquestService interface
+```csharp
+public class TestController : ILinquestService {
+
+  public IQueryable<Company> Companies() {
+    // ...
+  }
+  
+  // limit the maximum allowed result count, exception will be thrown if given value is exceeded
+  public int? MaxResultCount { get; set; }
+  
+  public event BeforeQueryDelegate BeforeHandleQuery;
+  public event BeforeQueryDelegate BeforeQueryExecute;
+  public event AfterQueryDelegate AfterQueryExecute;
+
+  void ILinquestService.OnBeforeHandleQuery(BeforeQueryEventArgs args) 
+      => BeforeHandleQuery?.Invoke(this, args);
+
+  void ILinquestService.OnBeforeQueryExecute(BeforeQueryEventArgs args) 
+      => BeforeQueryExecute?.Invoke(this, args);
+
+  void ILinquestService.OnAfterQueryExecute(AfterQueryEventArgs args) 
+      => AfterQueryExecute?.Invoke(this, args);
+
+  public ProcessResult ProcessRequest(ActionContext context) {
+    // you can customize processing the request, or use default processor
+    return Helper.DefaultRequestProcessor(context, this.HttpContext.RequestServices);
+  }
+}
+```
+
+If you don't need intercepting the Linquest operations, you can use LinquestActionFilter;
+#### 1. With Controller
+
