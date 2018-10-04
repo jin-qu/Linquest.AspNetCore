@@ -8,7 +8,6 @@ namespace Linquest.AspNetCore.Tests.Fixture {
     using Model;
 
     [Route("api/[controller]")]
-    [LinquestActionFilter]
     public class TestController : LinquestController {
 
         public TestController() {

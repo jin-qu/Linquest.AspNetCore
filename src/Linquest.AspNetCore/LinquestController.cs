@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Linquest.AspNetCore {
     using Interface;
 
+    [LinquestActionFilter]
     public class LinquestController : ControllerBase, ILinquestService {
 
         public event BeforeQueryDelegate BeforeHandleQuery;
