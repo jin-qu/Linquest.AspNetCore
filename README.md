@@ -14,7 +14,7 @@ Linquest Asp.Net Core backend.
 
 #### Package Manager
 ```
-dotnet add package Linquest.AspNetCore
+Install-Package Linquest.AspNetCore
 ```
 #### .Net CLI
 ```
