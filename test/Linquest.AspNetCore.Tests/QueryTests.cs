@@ -30,9 +30,10 @@ namespace Linquest.AspNetCore.Tests {
         public async Task ShouldReturnNull() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
-                var value = await client.GetStringAsync("api/Test/NullValue");
+                var content = await client.GetStringAsync("api/Test/NullValue");
+                var dynContent = JObject.Parse(content);
 
-                Assert.Empty(value);
+                Assert.Empty(dynContent["d"]);
             }
         }
 
@@ -41,8 +42,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var orders = dynContent["d"].ToObject<List<Order>>();
 
                 Assert.Equal(2, orders.Count);
                 Assert.Equal(4, orders[0].Id);
@@ -55,8 +57,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test2/Orders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var orders = dynContent["d"].ToObject<List<Order>>();
 
                 Assert.Equal(2, orders.Count);
                 Assert.Equal(4, orders[0].Id);
@@ -69,8 +72,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/EnumerableOrders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var orders = dynContent["d"].ToObject<List<Order>>();
 
                 Assert.Equal(5, orders.Count);
             }
@@ -81,8 +85,8 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/NonLinquestOrders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(content);
 
                 Assert.Equal(5, orders.Count);
             }
@@ -93,8 +97,8 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/JsonOrders?$where={WebUtility.UrlEncode("o => o.Id > 3")}";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync(url);
+                var orders = JsonConvert.DeserializeObject<List<Order>>(content);
 
                 Assert.Equal(5, orders.Count);
             }
@@ -107,16 +111,18 @@ namespace Linquest.AspNetCore.Tests {
                 var client = testServer.CreateClient();
 
                 var url1 = $"api/Test/Orders?$orderBy={WebUtility.UrlEncode("o => o.Price")}&$thenByDescending={WebUtility.UrlEncode("o => o.Id")}";
-                var response1 = await client.GetStringAsync(url1);
-                var orders1 = JsonConvert.DeserializeObject<List<Order>>(response1);
+                var content1 = await client.GetStringAsync(url1);
+                var dynContent1 = JObject.Parse(content1);
+                var orders1 = dynContent1["d"].ToObject<List<Order>>();
 
                 Assert.Equal(5, orders1.Count);
                 Assert.Equal(4, orders1[0].Id);
                 Assert.Equal("Ord3", orders1[4].No);
 
                 var url2 = $"api/Test/Orders?$orderByDescending={WebUtility.UrlEncode("o => o.Price")}&$thenBy={WebUtility.UrlEncode("o => o.Id")}";
-                var response2 = await client.GetStringAsync(url2);
-                var orders2 = JsonConvert.DeserializeObject<List<Order>>(response2);
+                var content2 = await client.GetStringAsync(url2);
+                var dynContent2 = JObject.Parse(content2);
+                var orders2 = dynContent2["d"].ToObject<List<Order>>();
 
                 Assert.Equal(5, orders2.Count);
                 Assert.Equal(3, orders2[0].Id);
@@ -129,8 +135,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$select={WebUtility.UrlEncode("o => new { o.Id, o.No }")}";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<JObject>>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var orders = dynContent["d"].ToObject<List<JObject>>();
 
                 Assert.Equal(5, orders.Count);
                 Assert.Equal(2, orders[0].Properties().Count());
@@ -144,8 +151,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$skipWhile={WebUtility.UrlEncode("o => o.Id < 3")}";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var orders = dynContent["d"].ToObject<List<Order>>();
 
                 Assert.Equal(3, orders.Count);
                 Assert.Equal(3, orders[0].Id);
@@ -158,8 +166,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$takeWhile={WebUtility.UrlEncode("o => o.Id < 3")}";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var orders = dynContent["d"].ToObject<List<Order>>();
 
                 Assert.Equal(2, orders.Count);
                 Assert.Equal(1, orders[0].Id);
@@ -175,35 +184,35 @@ namespace Linquest.AspNetCore.Tests {
                 var url1 = "api/Test/Orders?$inlineCount=allpages&$skip=2&$take=2";
                 var response1 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url1));
                 var content1 = await response1.Content.ReadAsStringAsync();
-                var orders1 = JsonConvert.DeserializeObject<List<Order>>(content1);
+                var dynContent1 = JObject.Parse(content1);
+                var orders1 = dynContent1["d"].ToObject<List<Order>>();
 
                 Assert.Equal(2, orders1.Count);
                 Assert.Equal(3, orders1[0].Id);
                 Assert.Equal("Ord4", orders1[1].No);
-                var inlineCountHeader = response1.Headers.FirstOrDefault(h => h.Key == "X-InlineCount");
-                Assert.Equal("5", inlineCountHeader.Value.FirstOrDefault());
+                Assert.Equal("5", dynContent1["inlineCount"].ToString());
 
                 var url2 = "api/Test/Orders?$inlineCount=false&$skip=2&$take=2";
                 var response2 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url2));
                 var content2 = await response2.Content.ReadAsStringAsync();
-                var orders2 = JsonConvert.DeserializeObject<List<Order>>(content2);
+                var dynContent2 = JObject.Parse(content2);
+                var orders2 = dynContent2["d"].ToObject<List<Order>>();
 
                 Assert.Equal(2, orders2.Count);
                 Assert.Equal(3, orders2[0].Id);
                 Assert.Equal("Ord4", orders2[1].No);
-                inlineCountHeader = response2.Headers.FirstOrDefault(h => h.Key == "X-InlineCount");
-                Assert.Equal(default(KeyValuePair<string, IEnumerable<string>>), inlineCountHeader);
+                Assert.False(dynContent2.TryGetValue("inlineCount", StringComparison.CurrentCulture, out JToken _));
 
                 var url3 = "api/Test/Orders?$inlineCount&$take=2";
                 var response3 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url3));
                 var content3 = await response3.Content.ReadAsStringAsync();
-                var orders3 = JsonConvert.DeserializeObject<List<Order>>(content3);
+                var dynContent3 = JObject.Parse(content3);
+                var orders3 = dynContent3["d"].ToObject<List<Order>>();
 
                 Assert.Equal(2, orders3.Count);
                 Assert.Equal(1, orders3[0].Id);
                 Assert.Equal("Ord2", orders3[1].No);
-                inlineCountHeader = response3.Headers.FirstOrDefault(h => h.Key == "X-InlineCount");
-                Assert.Equal("5", inlineCountHeader.Value.FirstOrDefault());
+                Assert.Equal("5", dynContent3["inlineCount"].ToString());
             }
         }
 
@@ -213,14 +222,16 @@ namespace Linquest.AspNetCore.Tests {
                 var client = testServer.CreateClient();
 
                 var url1 = $"api/Test/Orders?$groupBy={WebUtility.UrlEncode("o => o.Price")};{WebUtility.UrlEncode("(k, g) => g.Count()")}";
-                var response1 = await client.GetStringAsync(url1);
-                var counts = JsonConvert.DeserializeObject<List<int>>(response1);
+                var content1 = await client.GetStringAsync(url1);
+                var dynContent1 = JObject.Parse(content1);
+                var counts = dynContent1["d"].ToObject<List<int>>();
 
                 Assert.Equal(new[] { 1, 1, 2, 1 }, counts);
 
                 var url2 = $"api/Test/Orders?$groupBy={WebUtility.UrlEncode("o => o.Price")}";
-                var response2 = await client.GetStringAsync(url2);
-                var groups = JsonConvert.DeserializeObject<List<List<Order>>>(response2);
+                var content2 = await client.GetStringAsync(url2);
+                var dynContent2 = JObject.Parse(content2);
+                var groups = dynContent2["d"].ToObject<List<List<Order>>>();
 
                 Assert.Single(groups[0]);
                 Assert.Single(groups[1]);
@@ -238,9 +249,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$select={WebUtility.UrlEncode("o => o.Price")}&$distinct&$count";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal(4, Convert.ToInt32(response));
+                Assert.Equal(4, Convert.ToInt32(dynContent["d"]));
             }
         }
 
@@ -249,8 +261,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$selectMany={WebUtility.UrlEncode("o => o.OrderDetails")}";
-                var response = await client.GetStringAsync(url);
-                var details = JsonConvert.DeserializeObject<List<OrderDetail>>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var details = dynContent["d"].ToObject<List<OrderDetail>>();
 
                 Assert.Equal(16, details.Count);
                 Assert.Equal(36, details[4].Count);
@@ -264,15 +277,17 @@ namespace Linquest.AspNetCore.Tests {
                 var client = testServer.CreateClient();
 
                 var url1 = $"api/Test/Orders?$select=Price&$aggregate={WebUtility.UrlEncode("(p1, p2) => p1 + p2")}";
-                var response1 = await client.GetStringAsync(url1);
+                var content1 = await client.GetStringAsync(url1);
+                var dynContent1 = JObject.Parse(content1);
 
-                Assert.Equal(3632f, float.Parse(response1));
+                Assert.Equal(3632f, float.Parse(dynContent1["d"].ToString()));
 
                 var x = Consts.Orders.Select(o => o.Price).Aggregate(1f, (p1, p2) => p1 + p2);
                 var url2 = $"api/Test/Orders?$select=Price&$aggregate={WebUtility.UrlEncode("(p1, p2) => p1 + p2")};10";
-                var response2 = await client.GetStringAsync(url2);
+                var content2 = await client.GetStringAsync(url2);
+                var dynContent2 = JObject.Parse(content2);
 
-                Assert.Equal(3642f, float.Parse(response2), 1);
+                Assert.Equal(3642f, float.Parse(dynContent2["d"].ToString()), 1);
 
                 await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/Orders?$select=Price&$aggregate=a;b;c"));
             }
@@ -284,9 +299,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$all={WebUtility.UrlEncode("o => o.Id > 3")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal("false", response);
+                Assert.Equal("false", dynContent["d"].ToString().ToLower());
             }
         }
 
@@ -295,9 +311,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$any={WebUtility.UrlEncode("o => o.Id < 3")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal("true", response);
+                Assert.Equal("true", dynContent["d"].ToString().ToLower());
             }
         }
 
@@ -306,9 +323,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$avg={WebUtility.UrlEncode("o => o.Id")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal(3, float.Parse(response));
+                Assert.Equal(3, float.Parse(dynContent["d"].ToString()));
             }
         }
 
@@ -317,9 +335,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$max={WebUtility.UrlEncode("o => o.Price")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal(1125f, float.Parse(response));
+                Assert.Equal(1125f, float.Parse(dynContent["d"].ToString()));
             }
         }
 
@@ -328,9 +347,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$min={WebUtility.UrlEncode("o => o.Price")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal(231.58f, float.Parse(response));
+                Assert.Equal(231.58f, float.Parse(dynContent["d"].ToString()));
             }
         }
 
@@ -339,9 +359,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$sum={WebUtility.UrlEncode("o => o.Price")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal(3632f, float.Parse(response));
+                Assert.Equal(3632f, float.Parse(dynContent["d"].ToString()));
             }
         }
 
@@ -350,9 +371,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$count={WebUtility.UrlEncode("o => o.Id > 3")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal("2", response);
+                Assert.Equal("2", dynContent["d"].ToString());
             }
         }
 
@@ -361,8 +383,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$first={WebUtility.UrlEncode("o => o.Id > 3")}";
-                var response = await client.GetStringAsync(url);
-                var order = JsonConvert.DeserializeObject<Order>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var order = dynContent["d"].ToObject<Order>();
 
                 Assert.Equal(4, order.Id);
             }
@@ -373,9 +396,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$firstOrDefault={WebUtility.UrlEncode("o => o.Id > 5")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Empty(response);
+                Assert.Empty(dynContent["d"].ToString());
             }
         }
 
@@ -384,8 +408,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$single={WebUtility.UrlEncode("o => o.Id > 4")}";
-                var response = await client.GetStringAsync(url);
-                var order = JsonConvert.DeserializeObject<Order>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var order = dynContent["d"].ToObject<Order>();
 
                 Assert.Equal(5, order.Id);
             }
@@ -396,9 +421,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$singleOrDefault={WebUtility.UrlEncode("o => o.Id > 5")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Empty(response);
+                Assert.Empty(dynContent["d"].ToString());
             }
         }
 
@@ -407,8 +433,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$last={WebUtility.UrlEncode("o => o.Id > 2")}";
-                var response = await client.GetStringAsync(url);
-                var order = JsonConvert.DeserializeObject<Order>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var order = dynContent["d"].ToObject<Order>();
 
                 Assert.Equal(5, order.Id);
             }
@@ -419,9 +446,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$lastOrDefault={WebUtility.UrlEncode("o => o.Id > 5")}";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Empty(response);
+                Assert.Empty(dynContent["d"]);
             }
         }
 
@@ -430,8 +458,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = "api/Test/Orders?$elementAt=3";
-                var response = await client.GetStringAsync(url);
-                var order = JsonConvert.DeserializeObject<Order>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var order = dynContent["d"].ToObject<Order>();
 
                 Assert.Equal(4, order.Id);
             }
@@ -442,9 +471,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$elementAtOrDefault=5";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Empty(response);
+                Assert.Empty(dynContent["d"].ToString());
             }
         }
 
@@ -453,8 +483,9 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/Orders?$reverse";
-                var response = await client.GetStringAsync(url);
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
+                var orders = dynContent["d"].ToObject<List<Order>>();
 
                 Assert.Equal(5, orders.Count);
                 Assert.Equal(5, orders[0].Id);
@@ -467,9 +498,10 @@ namespace Linquest.AspNetCore.Tests {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
                 var url = $"api/Test/GetAProduct";
-                var response = await client.GetStringAsync(url);
+                var content = await client.GetStringAsync(url);
+                var dynContent = JObject.Parse(content);
 
-                Assert.Equal("42", response);
+                Assert.Equal("42", dynContent["d"].ToString());
             }
         }
 
@@ -477,9 +509,9 @@ namespace Linquest.AspNetCore.Tests {
         public async Task ShouldThrowWhenMaxCountExceeded() {
             using (var testServer = CreateTestServer()) {
                 var client = testServer.CreateClient();
-
-                var response = await client.GetStringAsync("api/Test/LimitedOrders?$take=3");
-                var orders = JsonConvert.DeserializeObject<List<Order>>(response);
+                var content = await client.GetStringAsync("api/Test/LimitedOrders?$take=3");
+                var dynContent = JObject.Parse(content);
+                var orders = dynContent["d"].ToObject<List<Order>>();
 
                 Assert.Equal(3, orders.Count);
                 await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync("api/Test/LimitedOrders"));

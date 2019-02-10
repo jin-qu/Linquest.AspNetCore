@@ -15,9 +15,7 @@ namespace Linquest.AspNetCore {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class LinquestActionFilterAttribute : ActionFilterAttribute {
 
-        public LinquestActionFilterAttribute() {
-            Order = 0;
-        }
+        public LinquestActionFilterAttribute() => Order = 0;
 
         public override void OnResultExecuting(ResultExecutingContext context) {
             base.OnResultExecuting(context);
@@ -54,6 +52,8 @@ namespace Linquest.AspNetCore {
                 : Helper.DefaultRequestProcessor(context, serviceProvider);
 
         protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response)
-            => Helper.HandleResponse(result, response);
+            => result.InlineCount != null
+                ? new ObjectResult(new { d = result.Result, inlineCount = result.InlineCount })
+                : new ObjectResult(new { d = result.Result });
     }
 }

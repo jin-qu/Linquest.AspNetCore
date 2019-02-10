@@ -34,15 +34,5 @@ namespace Linquest.AspNetCore {
 
             return new ProcessResult(context) { Result = value };
         }
-
-        // todo: JSON Array Ctor Vulnerability, wrap arrays with and object
-        public static ActionResult HandleResponse(ProcessResult result, HttpResponse response) {
-            var inlineCount = result.InlineCount;
-            if (inlineCount != null && !response.Headers.ContainsKey("X-InlineCount")) {
-                response.Headers.Add("X-InlineCount", inlineCount.ToString());
-            }
-
-            return new ObjectResult(result.Result);
-        }
     }
 }
