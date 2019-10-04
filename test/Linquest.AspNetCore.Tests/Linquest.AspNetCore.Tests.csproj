@@ -5,6 +5,14 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
+        <DefineConstants>NETCOREAPP2_1</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+        <DefineConstants>NETCOREAPP3_0</DefineConstants>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
         <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />

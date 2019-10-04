@@ -14,19 +14,27 @@
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <DefineConstants>NETSTANDARD2_0</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+        <DefineConstants>NETCOREAPP3_0</DefineConstants>
+    </PropertyGroup>
+    
     <ItemGroup>
-        <PackageReference Include="DynamicQueryable" Version="2.0.25" />
+        <PackageReference Include="DynamicQueryable" Version="2.0.25"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0"/>
     </ItemGroup>
 
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
         <!--        <PackageReference Include="Microsoft.AspNetCore.App" Version="3.0.0"/>-->
-<!--        <FrameworkReference Include="Microsoft.AspNetCore.App"/>-->
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <!--        <FrameworkReference Include="Microsoft.AspNetCore.App"/>-->
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 
 
