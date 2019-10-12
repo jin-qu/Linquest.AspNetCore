@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic;
-using System.Reflection;
-using Linquest.AspNetCore;
 
 namespace Linquest.AspNetCore {
     using Interface;
@@ -62,6 +59,7 @@ namespace Linquest.AspNetCore {
                         if (inlineCountEnabled && inlineCountQuery == null) {
                             inlineCountQuery = query;
                         }
+
                         query = Skip(query, Convert.ToInt32(prm.Value));
                         break;
                     case "$top":
@@ -69,6 +67,7 @@ namespace Linquest.AspNetCore {
                         if (inlineCountEnabled && inlineCountQuery == null) {
                             inlineCountQuery = query;
                         }
+
                         var take = Convert.ToInt32(prm.Value);
                         query = Take(query, take);
                         takeCount = take;
@@ -182,7 +181,12 @@ namespace Linquest.AspNetCore {
 
         public virtual IQueryable GroupBy(IQueryable query, string keySelector, string elementSelector) {
             return string.IsNullOrWhiteSpace(elementSelector)
+#if NETSTANDARD2_0
                 ? query.GroupBy(keySelector)
+#elif NETCOREAPP3_0
+                //INFO: List<IGrouping<Item>> can't be serialized using default ASP.NET Core 3.0 serializer
+                ? query.GroupBy(keySelector, "(key, group) => group")
+#endif
                 : query.GroupBy(keySelector, elementSelector);
         }
 

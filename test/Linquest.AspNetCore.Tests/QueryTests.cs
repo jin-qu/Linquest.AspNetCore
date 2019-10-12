@@ -231,16 +231,25 @@ namespace Linquest.AspNetCore.Tests {
                 var url2 = $"api/Test/Orders?$groupBy={WebUtility.UrlEncode("o => o.Price")}";
                 var content2 = await client.GetStringAsync(url2);
                 var dynContent2 = JObject.Parse(content2);
-                var groups = dynContent2["d"].ToObject<List<List<Order>>>();
+                var groups2 = dynContent2["d"].ToObject<List<List<Order>>>();
+
+                Assert.Single(groups2[0]);
+                Assert.Single(groups2[1]);
+                Assert.Equal(2, groups2[2].Count);
+                Assert.Single(groups2[3]);
+
+                var url3 = $"api/Test/Orders?$groupBy={WebUtility.UrlEncode("o => o.Price")};{WebUtility.UrlEncode("(k, g) => g")}";
+                var content3 = await client.GetStringAsync(url3);
+                var dynContent3 = JObject.Parse(content3);
+                var groups = dynContent3["d"].ToObject<List<List<Order>>>();
 
                 Assert.Single(groups[0]);
                 Assert.Single(groups[1]);
                 Assert.Equal(2, groups[2].Count);
                 Assert.Single(groups[3]);
 
-                var url3 = $"api/Test/Orders?$groupBy=a;b;c";
-
-                await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync(url3));
+                var url4 = $"api/Test/Orders?$groupBy=a;b;c";
+                await Assert.ThrowsAsync<Exception>(() => client.GetStringAsync(url4));
             }
         }
 

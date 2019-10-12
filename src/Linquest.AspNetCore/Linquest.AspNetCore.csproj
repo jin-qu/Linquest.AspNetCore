@@ -1,27 +1,42 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Description>Create client queryable API endpoints.</Description>
-    <Authors>Umut Özel</Authors>
-    <Copyright>Copyright (c) 2018</Copyright>
-    <PackageLicenseUrl>https://github.com/jin-qu/Linquest.AspNetCore/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/jin-qu/Linquest.AspNetCore</PackageProjectUrl>
-    <PackageIconUrl>https://image.ibb.co/kYhmu9/api.png</PackageIconUrl>
-    <PackageTags>csharp controller action api webapi iqueryable linq</PackageTags>
-    <RepositoryUrl>https://github.com/jin-qu/Linquest.AspNetCore</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <Description>Create client queryable API endpoints.</Description>
+        <Authors>Umut Özel</Authors>
+        <Copyright>Copyright (c) 2018</Copyright>
+        <PackageLicenseUrl>https://github.com/jin-qu/Linquest.AspNetCore/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/jin-qu/Linquest.AspNetCore</PackageProjectUrl>
+        <PackageIconUrl>https://image.ibb.co/kYhmu9/api.png</PackageIconUrl>
+        <PackageTags>csharp controller action api webapi iqueryable linq</PackageTags>
+        <RepositoryUrl>https://github.com/jin-qu/Linquest.AspNetCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="DynamicQueryable" Version="2.0.25" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0" />
-  </ItemGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <DefineConstants>NETSTANDARD2_0</DefineConstants>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <DebugType>full</DebugType>
-    <DebugSymbols>True</DebugSymbols>
-  </PropertyGroup>
-  
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+        <DefineConstants>NETCOREAPP3_0</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DynamicQueryable" Version="2.0.25"/>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0"/>
+    </ItemGroup>
+    
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+    
+    <PropertyGroup>
+        <DebugType>full</DebugType>
+        <DebugSymbols>True</DebugSymbols>
+    </PropertyGroup>
+
 </Project>
