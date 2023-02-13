@@ -26,9 +26,7 @@ namespace Linquest.AspNetCore.Tests.Fixture {
 
         [HttpGet]
         [NonLinquestAction]
-        public string Get() {
-            return "Hello World!";
-        }
+        public string Get() => "Hello World!";
 
         [LinquestMaxResult(3)]
         [HttpGet]

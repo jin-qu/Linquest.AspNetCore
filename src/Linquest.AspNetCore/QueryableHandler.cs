@@ -8,9 +8,8 @@ namespace Linquest.AspNetCore {
     public class QueryableHandler : IContentHandler<IQueryable> {
         private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>();
 
-        public virtual ProcessResult HandleContent(object query, ActionContext context) {
-            return HandleContent((IQueryable)query, context);
-        }
+        public virtual ProcessResult HandleContent(object query, ActionContext context) =>
+            HandleContent((IQueryable)query, context);
 
         public virtual ProcessResult HandleContent(IQueryable query, ActionContext context) {
             if (query == null) throw new ArgumentNullException(nameof(query));
@@ -147,37 +146,29 @@ namespace Linquest.AspNetCore {
             return CreateResult(context, query, takeCount, inlineCountQuery);
         }
 
-        public virtual IQueryable Where(IQueryable query, string filter) {
-            return query.Where(filter);
-        }
+        public virtual IQueryable Where(IQueryable query, string filter) =>
+            query.Where(filter);
 
-        public virtual IQueryable OrderBy(IQueryable query, string orderBy) {
-            return query.OrderBy(orderBy);
-        }
+        public virtual IQueryable OrderBy(IQueryable query, string orderBy) =>
+            query.OrderBy(orderBy);
 
-        public virtual IQueryable OrderbyDescending(IQueryable query, string orderBy) {
-            return query.OrderByDescending(orderBy);
-        }
+        public virtual IQueryable OrderbyDescending(IQueryable query, string orderBy) =>
+            query.OrderByDescending(orderBy);
 
-        public virtual IQueryable ThenBy(IQueryable query, string orderBy) {
-            return query.ThenBy(orderBy);
-        }
+        public virtual IQueryable ThenBy(IQueryable query, string orderBy) =>
+            query.ThenBy(orderBy);
 
-        public virtual IQueryable ThenByDescending(IQueryable query, string orderBy) {
-            return query.ThenByDescending(orderBy);
-        }
+        public virtual IQueryable ThenByDescending(IQueryable query, string orderBy) =>
+            query.ThenByDescending(orderBy);
 
-        public virtual IQueryable Select(IQueryable query, string projection) {
-            return query.Select(projection);
-        }
+        public virtual IQueryable Select(IQueryable query, string projection) =>
+            query.Select(projection);
 
-        public virtual IQueryable Skip(IQueryable query, int count) {
-            return query.Skip(count);
-        }
+        public virtual IQueryable Skip(IQueryable query, int count) =>
+            query.Skip(count);
 
-        public virtual IQueryable Take(IQueryable query, int count) {
-            return query.Take(count);
-        }
+        public virtual IQueryable Take(IQueryable query, int count) =>
+            query.Take(count);
 
         public virtual IQueryable GroupBy(IQueryable query, string keySelector, string elementSelector) {
             return string.IsNullOrWhiteSpace(elementSelector)
@@ -190,91 +181,70 @@ namespace Linquest.AspNetCore {
                 : query.GroupBy(keySelector, elementSelector);
         }
 
-        public virtual IQueryable Distinct(IQueryable query) {
-            return query.Distinct();
-        }
+        public virtual IQueryable Distinct(IQueryable query) =>
+            query.Distinct();
 
-        public virtual IQueryable Reverse(IQueryable query) {
-            return Queryable.Reverse((dynamic)query);
-        }
+        public virtual IQueryable Reverse(IQueryable query) =>
+            Queryable.Reverse((dynamic)query);
 
-        public virtual IQueryable SelectMany(IQueryable query, string projection) {
-            return string.IsNullOrWhiteSpace(projection) ? query : query.SelectMany(projection);
-        }
+        public virtual IQueryable SelectMany(IQueryable query, string projection) =>
+            string.IsNullOrWhiteSpace(projection) ? query : query.SelectMany(projection);
 
-        public virtual IQueryable SkipWhile(IQueryable query, string predicate) {
-            return query.SkipWhile(predicate);
-        }
+        public virtual IQueryable SkipWhile(IQueryable query, string predicate) =>
+            query.SkipWhile(predicate);
 
-        public virtual IQueryable TakeWhile(IQueryable query, string predicate) {
-            return query.TakeWhile(predicate);
-        }
+        public virtual IQueryable TakeWhile(IQueryable query, string predicate) =>
+            query.TakeWhile(predicate);
 
-        public virtual object Aggregate(IQueryable query, string func, string seed = null) {
-            return string.IsNullOrWhiteSpace(seed)
+        public virtual object Aggregate(IQueryable query, string func, string seed = null) =>
+            string.IsNullOrWhiteSpace(seed)
                 ? query.Aggregate(func)
                 : query.Aggregate(Convert.ToDouble(seed), func);
-        }
 
-        public virtual bool All(IQueryable query, string predicate) {
-            return query.All(predicate);
-        }
+        public virtual bool All(IQueryable query, string predicate) =>
+            query.All(predicate);
 
-        public virtual bool Any(IQueryable query, string predicate) {
-            return query.Any(predicate);
-        }
+        public virtual bool Any(IQueryable query, string predicate) =>
+            query.Any(predicate);
 
-        public virtual object Avg(IQueryable query, string elementSelector) {
-            return query.Average(elementSelector);
-        }
+        public virtual object Avg(IQueryable query, string elementSelector) =>
+            query.Average(elementSelector);
 
-        public virtual object Max(IQueryable query, string elementSelector) {
-            return query.Max(elementSelector);
-        }
+        public virtual object Max(IQueryable query, string elementSelector) =>
+            query.Max(elementSelector);
 
-        public virtual object Min(IQueryable query, string elementSelector) {
-            return query.Min(elementSelector);
-        }
+        public virtual object Min(IQueryable query, string elementSelector) =>
+            query.Min(elementSelector);
 
-        public virtual object Sum(IQueryable query, string elementSelector) {
-            return query.Sum(elementSelector);
-        }
+        public virtual object Sum(IQueryable query, string elementSelector) =>
+            query.Sum(elementSelector);
 
-        public virtual object Count(IQueryable query, string predicate) {
-            return query.Count(predicate);
-        }
+        public virtual object Count(IQueryable query, string predicate) =>
+            query.Count(predicate);
 
-        public virtual object First(IQueryable query, string predicate) {
-            return query.First(predicate);
-        }
+        public virtual object First(IQueryable query, string predicate) =>
+            query.First(predicate);
 
-        public virtual object FirstOrDefault(IQueryable query, string predicate) {
-            return query.FirstOrDefault(predicate);
-        }
+        public virtual object FirstOrDefault(IQueryable query, string predicate) =>
+            query.FirstOrDefault(predicate);
 
-        public virtual object Single(IQueryable query, string predicate) {
-            return query.Single(predicate);
-        }
+        public virtual object Single(IQueryable query, string predicate) =>
+            query.Single(predicate);
 
-        public virtual object SingleOrDefault(IQueryable query, string predicate) {
-            return query.SingleOrDefault(predicate);
-        }
+        public virtual object SingleOrDefault(IQueryable query, string predicate) =>
+            query.SingleOrDefault(predicate);
 
-        public virtual object Last(IQueryable query, string predicate) {
-            return query.Last(predicate);
-        }
+        public virtual object Last(IQueryable query, string predicate) =>
+            query.Last(predicate);
 
-        public virtual object LastOrDefault(IQueryable query, string predicate) {
-            return query.LastOrDefault(predicate);
-        }
+        public virtual object LastOrDefault(IQueryable query, string predicate) =>
+            query.LastOrDefault(predicate);
 
-        public virtual object ElementAt(IQueryable query, int index) {
-            return query.ElementAt(index);
-        }
+        public virtual object ElementAt(IQueryable query, int index) =>
+            query.ElementAt(index);
 
-        public virtual object ElementAtOrDefault(IQueryable query, int index) {
-            return query.ElementAtOrDefault(index);
-        }
+        public virtual object ElementAtOrDefault(IQueryable query, int index) =>
+            query.ElementAtOrDefault(index);
 
         protected static ProcessResult CreateResult(ActionContext context, IQueryable query, int? takeCount, IQueryable inlineCountQuery) {
             int? max = context.MaxResultCount ?? context.Service?.MaxResultCount;
