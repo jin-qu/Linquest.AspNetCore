@@ -1,8 +1,8 @@
 # Linquest.AspNetCore
 Linquest Asp.Net Core backend.
 
-[![Build and Test](https://github.com/umutozel/Linquest.AspNetCore/actions/workflows/build.yml/badge.svg)](https://github.com/umutozel/Linquest.AspNetCore/actions/workflows/build.yml)
-[![codecov](https://codecov.io/gh/umutozel/Linquest.AspNetCore/graph/badge.svg?token=5A9hHTDVFc)](https://codecov.io/gh/umutozel/Linquest.AspNetCore)
+[![Build and Test](https://github.com/jin-qu/Linquest.AspNetCore/actions/workflows/build.yml/badge.svg)](https://github.com/jin-qu/Linquest.AspNetCore/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/jin-qu/Linquest.AspNetCore/graph/badge.svg?token=5A9hHTDVFc)](https://codecov.io/gh/jin-qu/Linquest.AspNetCore)
 [![NuGet Badge](https://img.shields.io/nuget/v/Linquest.AspNetCore.svg)](https://www.nuget.org/packages/Linquest.AspNetCore/)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/Linquest.AspNetCore.svg)
 [![GitHub issues](https://img.shields.io/github/issues/jin-qu/Linquest.AspNetCore.svg)](https://github.com/jin-qu/Linquest.AspNetCore/issues)
