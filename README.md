@@ -1,9 +1,10 @@
 # Linquest.AspNetCore
 Linquest Asp.Net Core backend.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/dmtv1h7yfqip7ynd?svg=true)](https://ci.appveyor.com/project/umutozel/linquest-aspnetcore)
-[![Coverage Status](https://coveralls.io/repos/github/jin-qu/Linquest.AspNetCore/badge.svg?branch=master)](https://coveralls.io/github/jin-qu/Linquest.AspNetCore?branch=master)
-[![NuGet Badge](https://buildstats.info/nuget/Linquest.AspNetCore)](https://www.nuget.org/packages/Linquest.AspNetCore/)
+[![Build and Test](https://github.com/umutozel/Linquest.AspNetCore/actions/workflows/build.yml/badge.svg)](https://github.com/umutozel/Linquest.AspNetCore/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/umutozel/Linquest.AspNetCore/graph/badge.svg?token=5A9hHTDVFc)](https://codecov.io/gh/umutozel/Linquest.AspNetCore)
+[![NuGet Badge](https://img.shields.io/nuget/v/Linquest.AspNetCore.svg)](https://www.nuget.org/packages/Linquest.AspNetCore/)
+![NuGet Downloads](https://img.shields.io/nuget/dt/Linquest.AspNetCore.svg)
 [![GitHub issues](https://img.shields.io/github/issues/jin-qu/Linquest.AspNetCore.svg)](https://github.com/jin-qu/Linquest.AspNetCore/issues)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/jin-qu/Linquest.AspNetCore/master/LICENSE)
 
