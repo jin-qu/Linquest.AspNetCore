@@ -1,38 +1,43 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
-namespace Linquest.AspNetCore {
-    using Interface;
+namespace Linquest.AspNetCore;
 
-    public static class Helper {
+using Interface;
 
-        public static IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) {
-            return request.Query
-                .Where(q => q.Key.StartsWith("$"))
-                .Select(q => new LinquestParameter(q.Key, q.Value.ToString()))
-                .ToList()
-                .AsReadOnly();
-        }
+public static class Helper {
 
-        public static ProcessResult DefaultRequestProcessor(ActionContext context, IServiceProvider serviceProvider) {
-            var value = context.Value;
-            if (value == null)
-                return new ProcessResult(context) { Result = null };
+    public static ProcessResult ProcessQuery(IQueryable query, HttpRequest request, ILinquestService? service = null) {
+        var parameters = GetParameters(request);
+        var actionContext = new ActionContext(null, query, parameters, service);
 
-            var handlerType = typeof(IContentHandler<>).MakeGenericType(value.GetType());
-            var handler = serviceProvider?.GetService(handlerType);
+        return DefaultRequestProcessor(actionContext);
+    }
 
-            if (handler != null)
-                return ((IContentHandler)handler).HandleContent(value, context);
+    public static IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) {
+        return request.Query
+            .Where(q => q.Key.StartsWith("$"))
+            .Select(q => new LinquestParameter(q.Key, q.Value.ToString()))
+            .ToList()
+            .AsReadOnly();
+    }
 
-            if (context.Value is IQueryable queryable)
-                return QueryableHandler.Instance.HandleContent(queryable, context);
+    public static ProcessResult DefaultRequestProcessor(ActionContext context, IServiceProvider? serviceProvider = null) {
+        var value = context.Value;
+        if (value == null)
+            return new ProcessResult(context) { Result = null };
 
-            return new ProcessResult(context) { Result = value };
-        }
+        var handlerType = typeof(IContentHandler<>).MakeGenericType(value.GetType());
+        var handler = serviceProvider?.GetService(handlerType);
+
+        if (handler != null)
+            return ((IContentHandler)handler).HandleContent(value, context);
+
+        if (context.Value is IQueryable queryable)
+            return QueryableHandler.Instance.HandleContent(queryable, context);
+
+        return new ProcessResult(context) { Result = value };
     }
 }

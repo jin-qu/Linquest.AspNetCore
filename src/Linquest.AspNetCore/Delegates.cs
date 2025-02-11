@@ -1,36 +1,22 @@
 using System;
 using System.Linq;
 
-namespace Linquest.AspNetCore {
+namespace Linquest.AspNetCore;
 
-    public class BeforeQueryEventArgs : EventArgs {
+public class BeforeQueryEventArgs(ActionContext context, IQueryable query) : EventArgs {
+    public ActionContext Context { get; } = context;
 
-        public BeforeQueryEventArgs(ActionContext context, IQueryable query) {
-            Context = context;
-            Query = query;
-        }
-
-        public ActionContext Context { get; }
-
-        public IQueryable Query { get; set; }
-    }
-
-    public delegate void BeforeQueryDelegate(object sender, BeforeQueryEventArgs eventArgs);
-
-    public class AfterQueryEventArgs : EventArgs {
-
-        public AfterQueryEventArgs(ActionContext context, IQueryable query, object result) {
-            Context = context;
-            Query = query;
-            Result = result;
-        }
-
-        public ActionContext Context { get; }
-
-        public IQueryable Query { get; }
-
-        public object Result { get; set; }
-    }
-
-    public delegate void AfterQueryDelegate(object sender, AfterQueryEventArgs eventArgs);
+    public IQueryable Query { get; set; } = query;
 }
+
+public delegate void BeforeQueryDelegate(object sender, BeforeQueryEventArgs eventArgs);
+
+public class AfterQueryEventArgs(ActionContext context, IQueryable query, object result) : EventArgs {
+    public ActionContext Context { get; } = context;
+
+    public IQueryable Query { get; } = query;
+
+    public object Result { get; set; } = result;
+}
+
+public delegate void AfterQueryDelegate(object sender, AfterQueryEventArgs eventArgs);

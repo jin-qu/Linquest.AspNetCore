@@ -1,14 +1,6 @@
-namespace Linquest.AspNetCore {
+namespace Linquest.AspNetCore;
 
-    public struct LinquestParameter {
-
-        public LinquestParameter(string name, string value) {
-            Name = name;
-            Value = value;
-        }
-
-        public string Name { get; }
-
-        public string Value { get; }
-    }
+public readonly struct LinquestParameter(string name, string value) {
+    public string Name { get; } = name;
+    public string Value { get; } = value;
 }

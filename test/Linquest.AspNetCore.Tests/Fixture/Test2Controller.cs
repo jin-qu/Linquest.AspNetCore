@@ -1,15 +1,15 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Linquest.AspNetCore.Tests.Fixture {
-    using Model;
+namespace Linquest.AspNetCore.Tests.Fixture;
 
-    [Route("api/[controller]")]
-    [LinquestActionFilter]
-    public class Test2Controller {
+using Model;
 
-        [HttpGet]
-        [Route("Orders")]
-        public IQueryable<Order> Orders() => Consts.Orders.AsQueryable();
-    }
+[Route("api/[controller]")]
+[LinquestActionFilter]
+public class Test2Controller {
+
+    [HttpGet]
+    [Route("Orders")]
+    public IQueryable<Order> Orders() => Constants.Orders.AsQueryable();
 }

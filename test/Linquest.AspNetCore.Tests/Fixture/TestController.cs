@@ -3,68 +3,68 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Linquest.AspNetCore.Tests.Fixture {
-    using Model;
+namespace Linquest.AspNetCore.Tests.Fixture;
 
-    [Route("api/[controller]")]
-    public class TestController : LinquestController {
+using Model;
 
-        public TestController() {
-            BeforeHandleQuery += (sender, args) => {
-                if (args.Context == null)
-                    throw new ArgumentNullException(nameof(args.Context));
-            };
+[Route("api/[controller]")]
+public class TestController : LinquestController {
 
-            AfterQueryExecute += (sender, args) => {
-                if (args.Context == null)
-                    throw new ArgumentNullException(nameof(args.Context));
+    public TestController() {
+        BeforeHandleQuery += (_, args) => {
+            if (args.Context == null)
+                throw new ArgumentNullException(nameof(args.Context));
+        };
 
-                if (args.Query == null)
-                    throw new ArgumentNullException(nameof(args.Context));
-            };
-        }
+        AfterQueryExecute += (_, args) => {
+            if (args.Context == null)
+                throw new ArgumentNullException(nameof(args.Context));
 
-        [HttpGet]
-        [NonLinquestAction]
-        public string Get() => "Hello World!";
+            if (args.Query == null)
+                throw new ArgumentNullException(nameof(args.Context));
+        };
+    }
 
-        [LinquestMaxResult(3)]
-        [HttpGet]
-        [Route("NullValue")]
-        public IQueryable<Order> NullValue() => null;
+    [HttpGet]
+    [NonLinquestAction]
+    public string Get() => "Hello World!";
 
-        [HttpGet]
-        [Route("Orders")]
-        public IQueryable<Order> Orders() => Consts.Orders.AsQueryable();
+    [LinquestMaxResult(3)]
+    [HttpGet]
+    [Route("NullValue")]
+    public IQueryable<Order>? NullValue() => null;
 
-        [HttpGet]
-        [Route("EnumerableOrders")]
-        public IEnumerable<Order> EnumerableOrders() => Consts.Orders;
+    [HttpGet]
+    [Route("Orders")]
+    public IQueryable<Order> Orders() => Constants.Orders.AsQueryable();
 
-        [LinquestMaxResult(3)]
-        [HttpGet]
-        [Route("LimitedOrders")]
-        public IQueryable<Order> LimitedOrders() => Consts.Orders.AsQueryable();
+    [HttpGet]
+    [Route("EnumerableOrders")]
+    public IEnumerable<Order> EnumerableOrders() => Constants.Orders;
 
-        [HttpGet]
-        [Route("GetAProduct")]
-        public Product GetAProduct() => new Product("P01", "Product01", "C01");
+    [LinquestMaxResult(3)]
+    [HttpGet]
+    [Route("LimitedOrders")]
+    public IQueryable<Order> LimitedOrders() => Constants.Orders.AsQueryable();
 
-        [NonLinquestAction]
-        [HttpGet]
-        [Route("NonLinquestOrders")]
-        public IQueryable<Order> NonLinquestOrders() => Consts.Orders.AsQueryable();
+    [HttpGet]
+    [Route("GetAProduct")]
+    public Product GetAProduct() => new Product("P01", "Product01", "C01");
 
-        [NonLinquestAction]
-        [HttpGet]
-        [Route("JsonOrders")]
-        public JsonResult JsonOrders() => new JsonResult(Consts.Orders.ToList());
+    [NonLinquestAction]
+    [HttpGet]
+    [Route("NonLinquestOrders")]
+    public IQueryable<Order> NonLinquestOrders() => Constants.Orders.AsQueryable();
 
-        protected override ProcessResult ProcessRequest(ActionContext actionContext) {
-            if (actionContext.Descriptor == null)
-                throw new ArgumentNullException(nameof(actionContext.Descriptor));
+    [NonLinquestAction]
+    [HttpGet]
+    [Route("JsonOrders")]
+    public JsonResult JsonOrders() => new JsonResult(Constants.Orders.ToList());
 
-            return base.ProcessRequest(actionContext);
-        }
+    protected override ProcessResult ProcessRequest(ActionContext actionContext) {
+        if (actionContext.Descriptor == null)
+            throw new ArgumentNullException(nameof(actionContext.Descriptor));
+
+        return base.ProcessRequest(actionContext);
     }
 }

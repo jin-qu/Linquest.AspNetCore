@@ -1,7 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <Description>Create client queryable API endpoints.</Description>
         <Authors>Umut Özel</Authors>
@@ -12,28 +11,17 @@
         <PackageTags>csharp controller action api webapi iqueryable linq</PackageTags>
         <RepositoryUrl>https://github.com/jin-qu/Linquest.AspNetCore</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <DefineConstants>NETSTANDARD2_0</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
-        <DefineConstants>NETCOREAPP3_0</DefineConstants>
+        <LangVersion>13</LangVersion>
+        <Nullable>enable</Nullable>
+        <TargetFramework>net8.0</TargetFramework>
+        <OutputType>Library</OutputType>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DynamicQueryable" Version="2.0.25"/>
+        <PackageReference Include="DynamicQueryable" Version="2.1.2" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0"/>
-    </ItemGroup>
-    
-    <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-    </ItemGroup>
-    
     <PropertyGroup>
         <DebugType>full</DebugType>
         <DebugSymbols>True</DebugSymbols>

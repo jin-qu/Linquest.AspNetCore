@@ -1,11 +1,8 @@
 using System;
 
-namespace Linquest.AspNetCore {
+namespace Linquest.AspNetCore;
 
-    [AttributeUsage(AttributeTargets.Method)]
-    public class LinquestMaxResultAttribute : Attribute {
-
-        public LinquestMaxResultAttribute(int count) {
-        }
-    }
+[AttributeUsage(AttributeTargets.Method)]
+public class LinquestMaxResultAttribute(int count) : Attribute {
+    public int Count { get; } = count;
 }

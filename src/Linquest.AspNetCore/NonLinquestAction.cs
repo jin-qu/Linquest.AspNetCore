@@ -1,7 +1,7 @@
 using System;
 
-namespace Linquest.AspNetCore {
+namespace Linquest.AspNetCore;
 
-    public class NonLinquestActionAttribute: Attribute {
-    }
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.All)]
+public class NonLinquestActionAttribute: Attribute {
 }

@@ -1,22 +1,17 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Linquest.AspNetCore {
-    using Interface;
+namespace Linquest.AspNetCore;
 
-    public class ActionContext {
+using Interface;
 
-        public ActionContext(ActionDescriptor descriptor, object value, IEnumerable<LinquestParameter> parameters, ILinquestService service) {
-            Descriptor = descriptor;
-            Value = value;
-            Parameters = parameters;
-            Service = service;
-        }
+public class ActionContext(ActionDescriptor? descriptor, object? value,
+                           IEnumerable<LinquestParameter>? parameters,
+                           ILinquestService? service) {
 
-        public ActionDescriptor Descriptor { get; }
-        public object Value { get; }
-        public IEnumerable<LinquestParameter> Parameters { get; }
-        public ILinquestService Service { get; }
-        public int? MaxResultCount { get; set; }
-    }
+    public ActionDescriptor? Descriptor { get; } = descriptor;
+    public object? Value { get; } = value;
+    public IEnumerable<LinquestParameter> Parameters { get; } = parameters ?? [];
+    public ILinquestService? Service { get; } = service;
+    public int? MaxResultCount { get; set; }
 }

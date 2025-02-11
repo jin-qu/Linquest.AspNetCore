@@ -6,9 +6,9 @@ namespace Linquest.AspNetCore {
     [LinquestActionFilter]
     public class LinquestController : ControllerBase, ILinquestService {
 
-        public event BeforeQueryDelegate BeforeHandleQuery;
-        public event BeforeQueryDelegate BeforeQueryExecute;
-        public event AfterQueryDelegate AfterQueryExecute;
+        public event BeforeQueryDelegate? BeforeHandleQuery;
+        public event BeforeQueryDelegate? BeforeQueryExecute;
+        public event AfterQueryDelegate? AfterQueryExecute;
         public int? MaxResultCount { get; set; }
 
         protected virtual ProcessResult ProcessRequest(ActionContext context) =>
