@@ -34,8 +34,7 @@ public class LinquestActionFilterAttribute : ActionFilterAttribute {
         var mra = typeof(LinquestMaxResultAttribute);
         var maxAttr = cad?.MethodInfo.CustomAttributes
             .FirstOrDefault(a => a.AttributeType == mra);
-        var max = (int?)maxAttr?.ConstructorArguments.First()
-            .Value;
+        var max = (int?)maxAttr?.ConstructorArguments.First().Value;
         var ac = new ActionContext(context.ActionDescriptor, value, GetParameters(request), service) {
             MaxResultCount = max
         };

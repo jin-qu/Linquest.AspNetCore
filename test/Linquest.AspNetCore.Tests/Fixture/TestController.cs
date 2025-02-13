@@ -11,12 +11,18 @@ using Model;
 public class TestController : LinquestController {
 
     public TestController() {
+        MaxResultCount = 100;
+
         BeforeHandleQuery += (_, args) => {
+            args.Query = args.Query;
+
             if (args.Context == null)
                 throw new ArgumentNullException(nameof(args.Context));
         };
 
         AfterQueryExecute += (_, args) => {
+            args.Result = args.Result;
+
             if (args.Context == null)
                 throw new ArgumentNullException(nameof(args.Context));
 

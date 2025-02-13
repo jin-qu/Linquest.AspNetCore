@@ -12,7 +12,7 @@ namespace Linquest.AspNetCore {
         public int? MaxResultCount { get; set; }
 
         protected virtual ProcessResult ProcessRequest(ActionContext context) =>
-            Helper.DefaultRequestProcessor(context, this.HttpContext.RequestServices);
+            Helper.DefaultRequestProcessor(context, HttpContext.RequestServices);
 
         ProcessResult ILinquestService.ProcessRequest(ActionContext context) =>
             ProcessRequest(context);

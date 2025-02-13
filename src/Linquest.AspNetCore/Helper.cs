@@ -9,13 +9,6 @@ using Interface;
 
 public static class Helper {
 
-    public static ProcessResult ProcessQuery(IQueryable query, HttpRequest request, ILinquestService? service = null) {
-        var parameters = GetParameters(request);
-        var actionContext = new ActionContext(null, query, parameters, service);
-
-        return DefaultRequestProcessor(actionContext);
-    }
-
     public static IReadOnlyList<LinquestParameter> GetParameters(HttpRequest request) {
         return request.Query
             .Where(q => q.Key.StartsWith("$"))
