@@ -19,7 +19,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DynamicQueryable" Version="2.1.4" />
+        <PackageReference Include="DynamicQueryable" Version="2.2.10" />
     </ItemGroup>
 
     <PropertyGroup>
